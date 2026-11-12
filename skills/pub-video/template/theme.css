@@ -1,0 +1,28 @@
+/* Brand of the product: colours, fonts, shapes. Every value here comes from the product itself
+   (its site or its source), never from taste. `pub-video capture` lists what the site uses. */
+:root {
+	/* Surfaces and text */
+	--bg: #f5f5f7; /* page background of the product */
+	--surface: #ffffff; /* cards, sheets */
+	--ink: #101216; /* main text */
+	--ink-2: #4a4f5c; /* secondary text */
+	--ink-3: #8a90a0; /* hints */
+	--line: #e3e5eb; /* borders */
+
+	/* Brand */
+	--brand: #2b5cff; /* primary brand colour: buttons, logo */
+	--brand-ink: #ffffff; /* text on the brand colour */
+	--accent: #ffc52e; /* second colour: highlights, marker sweeps */
+	--ok: #12a05c; /* success */
+	--warn: #e5484d; /* error, loss */
+
+	/* Type: the product's own fonts, as local files in assets/fonts (pub-video font "<family>") */
+	--font-display: system-ui; /* titles */
+	--font-text: system-ui; /* body, interface */
+	--font-mono: ui-monospace; /* code and K.terminal: the product's code font, or pub-video font "JetBrains Mono" */
+	--display-weight: 800;
+	--tracking: -0.035em; /* letter-spacing of titles */
+
+	/* Shape */
+	--r: 44px; /* radius of cards: follow the product's corners (sharp, soft, round) */
+}

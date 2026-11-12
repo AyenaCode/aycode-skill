@@ -1,0 +1,20 @@
+@import url('assets/fonts/manrope.css');
+/* Technical demo of the engine: a made-up product. Not a style to copy. */
+:root {
+	--bg: #f3f1ec;
+	--surface: #ffffff;
+	--ink: #16181d;
+	--ink-2: #545a66;
+	--ink-3: #9096a3;
+	--line: #e2e0d9;
+	--brand: #5b3df5;
+	--brand-ink: #ffffff;
+	--accent: #c8f04a;
+	--ok: #12a05c;
+	--warn: #e5484d;
+	--font-display: 'Manrope';
+	--font-text: 'Manrope';
+	--display-weight: 800;
+	--tracking: -0.045em;
+	--r: 48px;
+}

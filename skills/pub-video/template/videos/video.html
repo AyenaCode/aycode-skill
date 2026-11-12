@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="__LANG__">
+<head>
+<meta charset="utf-8" />
+<title>__TITLE__</title>
+<link rel="stylesheet" href="/engine/base.css" />
+<link rel="stylesheet" href="../theme.css" />
+<style>
+/* Styles used only by this ad. */
+</style>
+</head>
+<body>
+<script type="module">
+import { setup } from '/engine/engine.js';
+import * as K from '/engine/kit.js';
+
+const { gsap, tl, stage, b, bar, scene, cue, frame, rnd, h, done, W, H } = await setup({
+	format: '__FORMAT__',
+	fps: 30,
+	bpm: 120, // tempo of the chosen track, from `pub-video music scan`
+	bars: __BARS__, // length in bars of 4 beats
+	safe: 'universal', // 'ads' when the video runs as a paid Reels or TikTok placement
+	music: null // { src: '../audio/music/<file>', start: <seconds into the track at t = 0>, … } : see `pub-video music fit`
+});
+
+// One scene per idea of the storyboard. Times are beats, so every move lands on the music.
+// scene(name, start, end, (el, s) => { build the elements in el, animate them on s });
+
+await done();
+</script>
+</body>
+</html>

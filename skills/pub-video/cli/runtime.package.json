@@ -1,0 +1,10 @@
+{
+	"name": "pub-video-runtime",
+	"private": true,
+	"type": "module",
+	"description": "Shared Node dependencies of the pub-video skill, installed once by install.sh.",
+	"dependencies": {
+		"gsap": "3.15.1",
+		"playwright": "1.64.1"
+	}
+}

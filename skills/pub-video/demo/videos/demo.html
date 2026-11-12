@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Démo technique du moteur</title>
+<link rel="stylesheet" href="/engine/base.css" />
+<link rel="stylesheet" href="../theme.css" />
+<style>
+.ui { padding: 150px 34px 40px; background: var(--bg); font-family: var(--font-text); }
+.ui h3 { font-size: 46px; letter-spacing: -0.03em; margin-bottom: 26px; }
+.ui .it { display: flex; align-items: center; gap: 22px; height: 132px; padding: 0 28px; margin-bottom: 20px; border-radius: 30px; background: #fff; font-size: 32px; font-weight: 600; }
+.ui .it i { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 4px solid var(--line); }
+.ui .it.done i { border-color: var(--brand); background: var(--brand); }
+.logo { width: 220px; height: 220px; border-radius: 60px; background: var(--ink); display: grid; place-items: center; }
+.logo::after { content: ''; width: 96px; height: 96px; border-radius: 50%; border: 22px solid var(--accent); }
+.web { padding: 70px; font-family: var(--font-text); }
+.web h4 { font-size: 64px; letter-spacing: -0.04em; line-height: 1; }
+.web p { margin-top: 20px; font-size: 30px; color: var(--ink-2); }
+.web .go { display: inline-block; margin-top: 44px; padding: 22px 44px; border-radius: 999px; background: var(--brand); color: #fff; font-size: 32px; font-weight: 700; }
+</style>
+</head>
+<body>
+<script type="module">
+import { setup } from '/engine/engine.js';
+import * as K from '/engine/kit.js';
+
+const { tl, b, scene, cue, h, done, W } = await setup({ format: '9:16', fps: 30, bpm: 120, bars: 8, safe: 'universal' });
+K.grain(document.getElementById('stage'), { opacity: 0.06 });
+
+// 1. Hook: slammed words and popping chips (0 → 2 s)
+const hook = scene('accroche', b(0), b(4), (el, s) => {
+	el.style.background = 'var(--ink)';
+	const t = K.text(el, 'Trop<br>d’onglets ?', 't-hero', { left: '90px', top: '520px', color: '#fff' });
+	K.textIn(s, t, 0, { style: 'slam' });
+	const chips = [['Notes', 110, 980, -5], ['Tâches', 560, 1060, 4], ['Agenda', 190, 1220, 3], ['Fichiers', 600, 1300, -4]].map(([txt, x, y, r]) =>
+		h(el, 'abs pill', txt, { left: `${x}px`, top: `${y}px`, rotate: `${r}deg`, fontSize: '52px' }));
+	K.enter(s, chips, b(1), { style: 'pop', each: 0.2 });
+	K.shake(s, t, b(3), { amp: 14 });
+	s.cue(b(3.25), 'riser', { d: b(0.75) });
+});
+
+// 2. Brand: masked reveal and a marker sweep (2 → 4 s)
+const brand = scene('marque', b(4), b(8), (el, s) => {
+	el.style.background = 'var(--accent)';
+	const logo = h(el, 'abs logo', '', { left: `${W / 2 - 110}px`, top: '480px' });
+	K.enter(s, logo, 0, { style: 'zoom', sfx: false });
+	const name = K.text(el, 'Orbite', 't-hero cx', { top: '760px' });
+	K.textIn(s, name, 0.15, { style: 'mask', by: 'chars', each: 0.035 });
+	const line = K.text(el, 'Tout au <span class="mark" style="--mark:#fff">même</span> endroit.', 't-sub cx', { top: '990px' });
+	K.textIn(s, line, b(0.5), { style: 'rise' });
+	K.mark(s, line.querySelector('.mark'), b(1.75));
+	s.cue(0, 'drop_hit');
+});
+
+// 3. Product: phone, scroll, tap, toast, camera push-in (4 → 8 s)
+const demo = scene('demo', b(8), b(16), (el, s) => {
+	el.style.background = 'var(--bg)';
+	K.glow(el, [[15, 20, '#d9d2ff', 800], [90, 75, '#eaf7b8', 900]]);
+	const cam = K.camera(el).look(540, 960, 1);
+	const cap = K.text(cam.world, 'Une liste. Zéro oubli.', 't-sub cx', { top: '290px' });
+	K.textIn(s, cap, b(0.5), { style: 'rise' });
+	const items = ['Appeler le fournisseur', 'Envoyer le devis', 'Relancer Awa', 'Préparer la livraison', 'Payer la facture', 'Répondre aux avis', 'Mettre à jour le stock', 'Publier la promo'];
+	const ph = K.phone(cam.world, { w: 560, y: 470, html: `<div class="ui"><h3>Aujourd’hui</h3>${items.map((t, i) => `<div class="it${i < 1 ? ' done' : ''}"><i></i>${t}</div>`).join('')}</div>` });
+	s.fromTo(ph.el, { y: 1500, rotationY: -26, rotationX: 16, transformPerspective: 2400 }, { y: 0, rotationY: 5, rotationX: 3, duration: b(2), ease: 'expo.out' }, 0);
+	s.cue(0.05, 'whoosh_up');
+	K.scroll(s, ph, 330, b(2), b(2));
+	K.textOut(s, cap, b(3.75), { style: 'up' });
+	cam.to(s, b(4), { x: 540, y: 1000, zoom: 1.22 }, b(1.5));
+	K.tap(s, ph.screen, 78, 446, b(5));
+	const row = ph.screen.querySelectorAll('.it')[3];
+	s.set(row, { className: 'it done' }, b(5));
+	const toast = h(el, 'abs toast', `<div class="ic">${K.icon.check}</div><div><b>Tâche terminée</b><span>Plus que six</span></div>`, { left: '100px', top: '330px' });
+	K.enter(s, toast, b(5.25), { style: 'drop', dist: 420, rot: 0, sfx: 'notif' });
+	K.leave(s, toast, b(7.6), { style: 'up' });
+});
+
+// 4. Numbers: counter, bars, hand-drawn circle (8 → 11 s)
+const data = scene('chiffres', b(16), b(22), (el, s) => {
+	el.style.background = 'var(--ink)';
+	el.style.color = '#fff';
+	const num = K.text(el, '0', 't-hero cx', { top: '560px', color: 'var(--accent)' });
+	K.count(s, num, 0, 12480, b(0.5), b(2), { step: 10 });
+	const lab = K.text(el, 'équipes organisées', 't-sub cx', { top: '770px' });
+	K.textIn(s, lab, b(1), { style: 'blur' });
+	const chart = h(el, 'abs', '', { left: '340px', top: '960px' });
+	K.bars(s, chart, [0.25, 0.4, 0.38, 0.6, 0.72, 0.9, 1], b(2.5), { h: 300, w: 44, color: 'var(--accent)' });
+	K.scribble(s, num, b(3.5), { kind: 'circle', color: '#fff', pad: 10 });
+});
+
+// 5. Web: browser window, typed address, pointer click (11 → 13 s)
+const web = scene('web', b(22), b(26), (el, s) => {
+	el.style.background = 'var(--brand)';
+	const br = K.browser(el, { w: 940, y: 520, h: 620, html: '<div class="web"><h4>Votre journée,<br>en ordre.</h4><p>Notes, tâches et agenda réunis.</p><span class="go">Commencer</span></div>' });
+	K.enter(s, br.el, 0, { style: 'rise', dist: 300 });
+	K.type(s, br.el.querySelector('.url'), 'orbite.example', b(0.5), b(1.25));
+	const p = K.pointer(s, br.screen, [[760, 520], [210, 440]], b(1.75));
+	K.press(s, br.screen.querySelector('.go'), p.end, { sfx: false });
+});
+
+// 6. Call to action: button, confetti, stamp (13 → 16 s)
+const cta = scene('cta', b(26), b(32), (el, s) => {
+	el.style.background = 'var(--bg)';
+	const t = K.text(el, 'Essaie Orbite.', 't-title cx', { top: '560px' });
+	K.textIn(s, t, b(0.25), { style: 'slam' });
+	const btn = h(el, 'abs btn', `Commencer <span class="ico">${K.icon.arrow}</span>`, { left: '280px', top: '860px', background: 'var(--brand)', color: '#fff' });
+	K.enter(s, btn, b(1.5), { style: 'pop' });
+	K.press(s, btn, b(3));
+	K.burst(s, el, 540, 900, b(3), { colors: ['var(--brand)', 'var(--accent)', 'var(--ink)'] });
+	const free = h(el, 'abs badge', 'Gratuit', { left: '640px', top: '720px', padding: '18px 40px', fontSize: '60px', background: 'var(--accent)' });
+	K.stamp(s, free, b(4), { shake: false });
+	K.pulse(s, btn, b(4.5), { n: 1, dur: 0.6 });
+	s.cue(b(4), 'final');
+});
+
+K.transition(tl, 'iris', hook, brand, { y: 700 });
+K.transition(tl, 'push', brand, demo, { dir: 'up' });
+K.transition(tl, 'whip', demo, data, { dir: 'left' });
+K.transition(tl, 'zoom', data, web);
+K.transition(tl, 'wipe', web, cta, { colors: ['var(--ink)', 'var(--accent)'], dir: 'right' });
+
+await done();
+</script>
+</body>
+</html>
