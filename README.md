@@ -7,16 +7,17 @@ Skills pour Claude Code. Chaque skill a son propre dossier dans `skills/`.
 | Skill | Rôle |
 |---|---|
 | [`pub-video`](skills/pub-video/SKILL.md) | Fabrique une pub vidéo en motion design pour un produit, à partir de son URL ou de son code. Le skill écrit le concept, le storyboard et la voix off, puis cale une musique libre au temps près, pose les bruitages et exporte le `.mp4`. |
+| [`pentester`](skills/pentester/SKILL.md) | Relit le code en pensant comme un attaquant, sans rien attaquer. Couvre le mobile (React Native), les API, le web et l'infra (Docker, Kubernetes, CI). Il écrit un rapport Markdown simple, avec la gravité et le correctif de chaque faille. |
 
 ## Installation
 
 ```bash
 git clone https://github.com/AyenaCode/aycode-skill.git
 mkdir -p ~/.claude/skills
-cp -r aycode-skill/skills/pub-video ~/.claude/skills/
+cp -r aycode-skill/skills/<skill> ~/.claude/skills/
 ```
 
-Le skill s'appelle ensuite avec `/pub-video` dans Claude Code.
+Remplace `<skill>` par le nom du skill, par exemple `pentester`. Il s'appelle ensuite avec `/<skill>` dans Claude Code.
 
 ## pub-video
 
