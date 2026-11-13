@@ -1,0 +1,40 @@
+// Sibling skills: the cut and the transcription come from montage-youtube, the music, the sound effects
+// and the mix from pub-video. Each is found through its command (a link into its skill folder) and its
+// modules are imported from there, so the code lives in one place.
+import { existsSync, realpathSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { which } from './util.mjs';
+
+const INSTALL = {
+	'montage-youtube': 'copie le skill montage-youtube dans ~/.claude/skills/ puis lance « bash ~/.claude/skills/montage-youtube/install.sh »',
+	'pub-video': 'copie le skill pub-video dans ~/.claude/skills/ puis lance « bash ~/.claude/skills/pub-video/install.sh »'
+};
+
+// Skill folder of a sibling command, or null when it is not installed.
+export async function skillDir(cmd) {
+	const bin = (await which(cmd)) ?? [join(homedir(), '.local/bin', cmd)].find((p) => existsSync(p));
+	if (!bin) return null;
+	const dir = resolve(dirname(realpathSync(bin)), '..');
+	return existsSync(join(dir, 'SKILL.md')) ? dir : null;
+}
+export async function needSkill(cmd) {
+	const dir = await skillDir(cmd);
+	if (!dir) throw new Error(`la commande ${cmd} est introuvable : ${INSTALL[cmd]}.`);
+	return dir;
+}
+async function load(cmd, rel) {
+	return import(pathToFileURL(join(await needSkill(cmd), rel)).href);
+}
+
+// montage-youtube: word-level transcription with whisper.cpp.
+export const montage = {
+	whisper: () => load('montage-youtube', 'cli/lib/whisper.mjs'),
+	util: () => load('montage-youtube', 'cli/lib/util.mjs')
+};
+// pub-video: the mix (music bed, sound effects, ducking under the voice) and the master.
+export const pub = {
+	audio: () => load('pub-video', 'cli/lib/audio.mjs'),
+	sfx: () => load('pub-video', 'cli/lib/sfx.mjs')
+};
