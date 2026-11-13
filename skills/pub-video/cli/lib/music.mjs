@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, join, relative } from 'node:path';
 import { decode, fft } from './dsp.mjs';
-import { projectRoot, fmt, pad, num } from './util.mjs';
+import { assetRoot, projectRoot, fmt, pad, num } from './util.mjs';
 
 export const booleans = ['help', 'bars', 'json', 'sfx'];
 const HELP = `pub-video music find [--mood <a,b>] [--genre <a,b>] [--tag <a,b>] [--instrument <a,b>] [--pages 1] [--max 8] [--skip 0] [--min 60] [--bpm 100-130]
@@ -22,7 +22,8 @@ pub-video music fit <fichier> --at <secondes> [--drop <secondes dans le morceau>
     Calcule le réglage qui fait tomber le drop à --at secondes de la vidéo, et affiche le bloc music: { … } à coller dans setup().
     Si le coup du drop arrive après sa barre de mesure, dit sur quel temps poser la révélation.
 pub-video music licence [--sfx]
-    Lit la licence Mixkit du jour (musique, ou bruitages avec --sfx), l'affiche et l'enregistre dans audio/music/licence-mixkit-<date>.txt.`;
+    Lit la licence Mixkit du jour (musique, ou bruitages avec --sfx), l'affiche et l'enregistre dans audio/music/licence-mixkit-<date>.txt.
+    find et licence marchent aussi hors d'un projet pub-video : les fichiers vont dans audio/ du dossier courant.`;
 
 const SR = 22050;
 const NFFT = 1024;
@@ -342,7 +343,7 @@ export default async function (_cmd, a) {
 		const end = claim > 0 ? text.indexOf('\n', claim) : text.indexOf('User Terms', start) + 12;
 		const body = text.slice(start, end > start ? end : start + 2000).trim();
 		const stamp = new Date().toISOString().slice(0, 10);
-		const dir = join(projectRoot(), 'audio', a.sfx ? 'sfx' : 'music');
+		const dir = join(assetRoot(), 'audio', a.sfx ? 'sfx' : 'music');
 		await mkdir(dir, { recursive: true });
 		const file = join(dir, `licence-mixkit-${stamp}.txt`);
 		await writeFile(file, `${url}\nLu le ${stamp}\n\n${body}\n`);
@@ -370,9 +371,10 @@ export default async function (_cmd, a) {
 	if (sub === 'find') {
 		const asked = ['mood', 'genre', 'tag', 'instrument'].filter((k) => a[k] !== undefined).map((kind) => ({ kind, values: String(a[kind]).split(',').map((v) => v.trim()).filter(Boolean) }));
 		if (!asked.length) throw new Error('donne --mood, --genre, --tag ou --instrument. Exemple : pub-video music find --mood energetic,confident');
-		const root = projectRoot();
+		const root = assetRoot();
 		const dir = join(root, 'audio', 'music');
 		await mkdir(dir, { recursive: true });
+		if (!existsSync(join(root, 'theme.css'))) console.log(`  hors d’un projet pub-video : les morceaux vont dans ${dir}`);
 		// The first criterion gives the pages to read; each other one filters their cards.
 		const [first, ...rest] = asked;
 		let items = [];

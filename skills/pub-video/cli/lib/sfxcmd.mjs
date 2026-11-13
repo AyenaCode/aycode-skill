@@ -2,7 +2,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { projectRoot, ffmpeg } from './util.mjs';
+import { assetRoot, ffmpeg } from './util.mjs';
 import { ABOUT, GAIN } from './sfx.mjs';
 
 export const booleans = ['help'];
@@ -12,7 +12,8 @@ pub-video sfx get <type> <id Mixkit | url | fichier>
     Remplace un bruitage intégré par un enregistrement réel : le fichier va dans audio/sfx/<type>.wav et sera
     utilisé pour tous les repères de ce type. Les bruitages Mixkit sont sous « Sound Effects Free License »
     (pubs en ligne autorisées, sans crédit ; pas de redistribution du fichier seul). Catégories à parcourir :
-    https://mixkit.co/free-sound-effects/<whoosh|click|impact|notification|pop|swish|transition|interface|coin|win>/`;
+    https://mixkit.co/free-sound-effects/<whoosh|click|impact|notification|pop|swish|transition|interface|coin|win>/
+    Hors d'un projet pub-video, le fichier va dans audio/sfx/ du dossier courant.`;
 
 export default async function (_cmd, a) {
 	const sub = a._[0];
@@ -25,9 +26,10 @@ export default async function (_cmd, a) {
 	if (sub === 'get') {
 		const [, type, src] = a._;
 		if (!type || !src) throw new Error('usage : pub-video sfx get <type> <id Mixkit | url | fichier>');
-		const root = projectRoot();
+		const root = assetRoot();
 		const dir = join(root, 'audio', 'sfx');
 		await mkdir(dir, { recursive: true });
+		if (!existsSync(join(root, 'theme.css'))) console.log(`  hors d’un projet pub-video : le bruitage va dans ${dir}`);
 		const url = /^\d+$/.test(src) ? `https://assets.mixkit.co/active_storage/sfx/${src}/${src}.wav` : src;
 		let input = url;
 		if (/^https?:/.test(url)) {

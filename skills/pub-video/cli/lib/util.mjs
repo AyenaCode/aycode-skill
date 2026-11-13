@@ -73,14 +73,22 @@ export async function ffmpeg(args, { quiet = true } = {}) {
 }
 
 // A project is the folder that holds videos/. Walk up from the current folder to find it.
-export function projectRoot(start = process.cwd()) {
+function findProject(start = process.cwd()) {
 	let d = resolve(start);
 	for (;;) {
 		if (existsSync(join(d, 'videos')) && existsSync(join(d, 'theme.css'))) return d;
 		const up = dirname(d);
-		if (up === d) fail('aucun projet ici. Crée-en un avec « pub-video new <dossier> », puis lance la commande depuis ce dossier.');
+		if (up === d) return null;
 		d = up;
 	}
+}
+export function projectRoot(start = process.cwd()) {
+	return findProject(start) ?? fail('aucun projet ici. Crée-en un avec « pub-video new <dossier> », puis lance la commande depuis ce dossier.');
+}
+// Where downloaded music and sound effects go: the project, or the current folder outside a project
+// (another skill, such as video-verticale, mixes them with pub-video's mixer).
+export function assetRoot(start = process.cwd()) {
+	return findProject(start) ?? resolve(start);
 }
 // "vendeur" → { name, file } for videos/vendeur.html.
 export function videoFile(root, name) {
