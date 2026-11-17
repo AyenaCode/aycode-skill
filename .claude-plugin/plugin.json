@@ -1,6 +1,6 @@
 {
   "name": "aycode",
-  "description": "Pub vidéo, montage YouTube, vidéo verticale et revue de sécurité pour les agents de code",
+  "description": "Planifier et livrer du code propre, pub vidéo, montage YouTube, vidéo verticale et revue de sécurité pour les agents de code",
   "author": { "name": "AyenaCode" },
   "repository": "https://github.com/AyenaCode/aycode-skill",
   "license": "MIT"
