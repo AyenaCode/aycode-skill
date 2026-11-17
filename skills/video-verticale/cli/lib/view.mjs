@@ -42,6 +42,6 @@ export default async function (cmd, a) {
 	const font = readdirSync(join(root, 'fonts')).find((f) => /\.(ttf|otf)$/i.test(f));
 	const label = font ? `,drawtext=fontfile=fonts/${font}:text='%{pts\\:hms\\:${from}}':x=10:y=10:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6` : '';
 	const out = join(root, 'work', `planche-${from}-${to.toFixed(1)}.png`);
-	await ffmpeg(['-ss', String(from), '-t', String(to - from), '-i', r.file, '-vf', `fps=1/${every}:start_time=0,scale=270:480${label},tile=${cols}x${rows}:padding=4:color=white`, '-frames:v', '1', '-update', '1', out], { cwd: root });
+	await ffmpeg(['-ss', String(from), '-t', String(to - from), '-i', r.file, '-vf', `fps=1/${every}:start_time=0:round=up,scale=270:480${label},tile=${cols}x${rows}:padding=4:color=white`, '-frames:v', '1', '-update', '1', out], { cwd: root });
 	console.log(`${out} : ${n} images de ${from} à ${to.toFixed(1)} s, toutes les ${every} s, de gauche à droite puis de haut en bas.`);
 }

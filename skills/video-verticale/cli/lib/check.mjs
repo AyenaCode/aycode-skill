@@ -2,7 +2,7 @@
 import { existsSync, statSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { buildAss } from './ass.mjs';
+import { bare, buildAss } from './ass.mjs';
 import { checkFont } from './police.mjs';
 import { fmt, loadConfig, loadWords, projectRoot, readJson, run, tc, zoneOf } from './util.mjs';
 
@@ -90,7 +90,7 @@ export default async function (_cmd, a) {
 	for (const z of cfg.zooms) if (z.z > 1.3 || z.z < 1 || z.t < 0 || z.t >= r.duration) warns.push(`zoom ×${z.z} à ${tc(z.t)} : hors de 1 à 1,3, ou hors de la vidéo.`);
 	// Uncertain words the user should confirm.
 	const fixed = new Set(Object.keys(cfg.sous_titres.corrections ?? {}));
-	const doubt = words.words.filter((w) => w.p !== undefined && w.p < 0.5 && !fixed.has(w.t.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')));
+	const doubt = words.words.filter((w) => w.p !== undefined && w.p < 0.5 && !fixed.has(bare(w.t)));
 	if (doubt.length) warns.push(`${doubt.length} mot(s) incertain(s) sans correction : ${doubt.slice(0, 8).map((w) => `${w.t} (${tc(w.a)})`).join(', ')}.`);
 
 	console.log(`${errors.length} erreur(s), ${warns.length} avertissement(s) · ${r.file}`);

@@ -94,7 +94,7 @@ async function screen(src, planche) {
 	const graph = [
 		'[0:v]split=2[x][y]',
 		'[x]fps=5,scale=320:-2,freezedetect=n=-60dB:d=0.4,nullsink',
-		`[y]fps=1/${step},scale=${tile}:-2,drawtext=text='%{pts\\:hms}':x=6:y=6:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=4,tile=${cols}x${rows}:padding=6:margin=6:color=0x1b1b1f[pl]`
+		`[y]fps=1/${step}:round=up,scale=${tile}:-2,drawtext=text='%{pts\\:hms}':x=6:y=6:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=4,tile=${cols}x${rows}:padding=6:margin=6:color=0x1b1b1f[pl]`
 	].join(';');
 	const r = await run('ffmpeg', ['-hide_banner', '-nostdin', '-y', '-i', src.file, '-filter_complex', graph, '-map', '[pl]', '-frames:v', '1', '-update', '1', planche]);
 	if (r.code) throw new Error(`ffmpeg (planche) a échoué :\n${r.err.trim().split('\n').slice(-4).join('\n')}`);
