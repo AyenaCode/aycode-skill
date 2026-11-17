@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Plan a code task before writing it — explore the project, pick the simplest design, then write a short brief in the dev's language and a detailed English plan that the `ship` skill executes. Use for a feature, a bug fix, a refactor or a migration, or when asked to "plan" / "planifier".
+description: Plan a code task without writing it — explore the project, pick the simplest design, then write a short brief in the dev's language and a detailed English plan that the `ship` skill executes. Use when the dev asks for a plan ("plan", "planifie", "fais un plan"), and when `ship` runs it.
 argument-hint: [the task]
 ---
 
@@ -33,8 +33,9 @@ Done when both files exist and you hold the open decisions.
 
 ## 2. Hand over
 
-Print the brief as written, then the open decisions, each with its options and the recommendation the files already apply. Give both file paths. Ask the dev to answer the decisions and edit the brief if anything is off, then give the go. Code waits for that go.
+Print the brief as written, then the open decisions, each with its options and the recommendation the files already apply. Give both file paths. Ask the dev to answer the decisions and edit the brief if anything is off, then give the go. Code waits for that go:
+
+- **`ship` ran you:** the dev replies with the go, and `ship` continues.
+- **The dev asked for the plan alone:** the go is the dev typing `/aycode:ship <plan path>` (`/ship <plan path>` outside the Claude Code plugin). Print that exact command.
 
 An answer that differs from a recommendation → update both files: continue the planning subagent with SendMessage when you can (it keeps its context), else update them yourself.
-
-On the go, run the `ship` skill (`aycode:ship` in the Claude Code plugin) on the plan path.

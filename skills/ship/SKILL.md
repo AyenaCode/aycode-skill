@@ -1,7 +1,8 @@
 ---
 name: ship
-description: Take a code task end to end — plan it with the dev, then loop through the steps (code, check, commit), simplify the whole change, verify it independently and report in the dev's language. Use when asked to "ship", to build, implement or fix something end to end, or to resume a `.local/plans/*.plan.md`.
+description: Take a code task end to end — plan it with the dev, code and commit step by step, simplify, verify independently, report in the dev's language. Typed by the dev to start; resumes a .local/plans/*.plan.md too.
 argument-hint: [the task, or a .local/plans/*.plan.md to resume]
+disable-model-invocation: true
 ---
 
 # Ship

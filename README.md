@@ -55,7 +55,7 @@ Ajoute `-g` pour tous tes projets, ou `--skill pentester` pour un seul skill. Le
 5. Il simplifie tout le changement, lance toutes les vérifications du projet, puis un vérificateur indépendant, en lecture seule, contrôle le travail.
 6. Le rapport final, dans ta langue, explique ce qui a changé, pourquoi, et comment le tester.
 
-`/aycode:planner <la tâche>` s'arrête après le plan. Pour reprendre une tâche interrompue : `/aycode:ship .local/plans/<tâche>.plan.md`.
+`ship` ne démarre que quand tu tapes sa commande. `planner` peut aussi se lancer tout seul quand tu demandes un plan dans la discussion. Il s'arrête après le plan, et tu démarres le travail avec `/aycode:ship .local/plans/<tâche>.plan.md`. C'est aussi cette commande qui reprend une tâche interrompue.
 
 Les règles du projet (`CLAUDE.md`, `AGENTS.md`) passent avant celles des skills. Les commandes de vérification (tests, lint, build) sont trouvées dans le projet.
 
