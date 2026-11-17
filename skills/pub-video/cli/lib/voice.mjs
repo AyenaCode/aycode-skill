@@ -7,6 +7,7 @@ import { join, relative } from 'node:path';
 import { projectRoot, videoFile, ffmpeg, run, fmt, num, pad } from './util.mjs';
 import { openVideo } from './browser.mjs';
 import { loudness } from './audio.mjs';
+import { decode, len, SR } from './dsp.mjs';
 
 export const booleans = ['help'];
 const HELP = `Le script : audio/voix/<vidéo>.txt, une ligne par réplique, au choix :
@@ -92,6 +93,30 @@ async function speech(file, gap) {
 	});
 	if (total - t > 0.25) segs.push([t, total]);
 	return segs;
+}
+
+// Where the voice starts and ends in a clip, in seconds, with `pre` and `post` seconds of margin. The voice is
+// the first and the last stretch that stays above `threshold` for `hold` seconds, so a shorter click is not
+// taken for it. (silenceremove with start_duration also skips such clicks, but it drops the first `hold` seconds
+// of the voice with them: the attack consonant of each line, and the end of its last word.)
+export async function voiced(file, { threshold = -45, hold = 0.05, pre = 0.02, post = 0.04 } = {}) {
+	const { L } = await decode(file, { mono: true });
+	const hop = len(0.005);
+	const win = len(0.02);
+	const floor = win * 10 ** (threshold / 10); // energy of one window at the threshold
+	const loud = []; // loud[j]: the window starting at j * hop is above the threshold
+	let e = 0;
+	for (let i = 0; i < L.length; i++) {
+		e += L[i] * L[i] - (i >= win ? L[i - win] * L[i - win] : 0);
+		if (i >= win - 1 && (i - win + 1) % hop === 0) loud.push(e > floor);
+	}
+	const need = Math.ceil(hold / 0.005);
+	let first = -1;
+	for (let j = 0, n = 0; j < loud.length && first < 0; j++) if ((n = loud[j] ? n + 1 : 0) >= need) first = j - need + 1;
+	if (first < 0) return null;
+	let last = -1;
+	for (let j = loud.length - 1, n = 0; j >= 0 && last < 0; j--) if ((n = loud[j] ? n + 1 : 0) >= need) last = j + need - 1;
+	return [Math.max(0, (first * hop) / SR - pre), Math.min(L.length / SR, (last * hop + win) / SR + post)];
 }
 
 export default async function (_cmd, a) {
@@ -184,14 +209,18 @@ export default async function (_cmd, a) {
 		const lead = num(a.lead, 0.06);
 		const maxTempo = num(a['max-tempo'], 1.12);
 		const placed = [];
-		console.log(`${pad('scène', 14)}${pad('prise', 8)}${pad('tempo', 8)}${pad('reste', 9)}texte`);
+		console.log(`${pad('scène', 14)}${pad('prise', 8)}${pad('tempo', 8)}${pad('reste', 16)}texte`);
 		for (const [i, l] of lines.entries()) {
 			const t = takes[i];
 			const raw = join(dir, `${name}-${String(i + 1).padStart(2, '0')}.raw.wav`);
 			const out = join(dir, `${name}-${String(i + 1).padStart(2, '0')}.wav`);
-			// Clean: trim the silence at both ends, remove rumble, even out the level.
-			const trim = 'silenceremove=start_periods=1:start_threshold=-45dB:start_duration=0.05,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_duration=0.05,areverse';
-			await ffmpeg([...(t.from !== undefined ? ['-ss', String(t.from), '-to', String(t.to)] : []), '-i', t.file, '-af', `highpass=f=85,${trim},acompressor=threshold=-22dB:ratio=3:attack=8:release=140`, '-ac', '1', '-ar', '48000', raw]);
+			// Clean: remove rumble, cut the silence around the voice (never the voice itself), even out the level.
+			const cut = join(dir, `${name}-${String(i + 1).padStart(2, '0')}.cut.wav`);
+			await ffmpeg([...(t.from !== undefined ? ['-ss', String(t.from), '-to', String(t.to)] : []), '-i', t.file, '-af', 'highpass=f=85', '-ac', '1', '-ar', '48000', cut]);
+			const span = await voiced(cut);
+			if (span) await ffmpeg(['-i', cut, '-af', `atrim=start=${span[0].toFixed(4)}:end=${span[1].toFixed(4)},asetpts=PTS-STARTPTS,acompressor=threshold=-22dB:ratio=3:attack=8:release=140`, raw]);
+			await run('rm', ['-f', cut]);
+			if (!span) throw new Error(`réplique ${i + 1} : aucune voix au-dessus de -45 dB. Vérifie la prise, ou les coupes (--cuts).`);
 			const d = await duration(raw);
 			const room = (lines[i + 1]?.a ?? meta.duration) - l.a - lead - 0.1;
 			const tempo = d > room ? Math.min(maxTempo, d / room) : 1;
@@ -201,7 +230,7 @@ export default async function (_cmd, a) {
 			await run('rm', ['-f', raw]);
 			const left = room - d / tempo;
 			placed.push({ file: relative(root, out), at: Math.round((l.a + lead) * 1000) / 1000, gain: 1 });
-			console.log(`${pad(`${fmt(l.a, 1)}–${fmt(l.z, 1)} s`, 14)}${pad(`${fmt(d, 1)} s`, 8)}${pad(tempo > 1.005 ? `×${fmt(tempo, 2)}` : '—', 8)}${pad(left < 0 ? `DÉBORDE ${fmt(-left, 1)} s` : `${fmt(left, 1)} s`, 9)}${l.text.slice(0, 60)}`);
+			console.log(`${pad(`${fmt(l.a, 1)}–${fmt(l.z, 1)} s`, 14)}${pad(`${fmt(d, 1)} s`, 8)}${pad(tempo > 1.005 ? `×${fmt(tempo, 2)}` : '—', 8)}${pad(left < -0.005 ? `DÉBORDE ${fmt(-left, 2)} s` : `${fmt(Math.max(0, left), 1)} s`, 16)}${l.text.slice(0, 60)}`);
 		}
 		await writeFile(join(dir, `${name}.json`), JSON.stringify(placed, null, 1));
 		console.log(`\n  placement → audio/voix/${name}.json. Mixage et export :`);
