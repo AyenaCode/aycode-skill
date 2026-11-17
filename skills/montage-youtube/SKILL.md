@@ -27,7 +27,7 @@ Chaque étape finit sur un critère vérifiable. Passe à la suivante quand il e
 
 ### 0. Outils
 
-`montage-youtube doctor`. Si la commande est introuvable : `bash ${CLAUDE_SKILL_DIR}/install.sh` (sans sudo). Un outil système absent (FFmpeg, whisper.cpp) se demande à l'utilisateur, avec la commande que `doctor` affiche. Si `doctor` conseille un modèle de transcription plus précis, transmets le conseil et continue.
+`bash ${CLAUDE_SKILL_DIR}/install.sh` (sans sudo, rapide). Il pointe la commande `montage-youtube` sur cette version du skill, même après une mise à jour, puis lance `montage-youtube doctor`. Un outil système absent (FFmpeg, whisper.cpp) se demande à l'utilisateur, avec la commande que `doctor` affiche. Si `doctor` conseille un modèle de transcription plus précis, transmets le conseil et continue.
 
 **Fini quand** `doctor` écrit « Tout le nécessaire est installé ».
 

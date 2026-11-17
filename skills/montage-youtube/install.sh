@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# One-time setup of the montage-youtube skill, user level only (no sudo): puts the `montage-youtube`
-# command in ~/.local/bin. No Node packages to install. System tools (ffmpeg, whisper.cpp) are only
+# Setup of the montage-youtube skill, run before each use, user level only (no sudo): points the
+# `montage-youtube` command in ~/.local/bin at this copy of the skill, which moves to a new folder on each
+# plugin update. No Node packages to install. System tools (ffmpeg, whisper.cpp) are only
 # checked: `montage-youtube doctor` says how to install a missing one.
 set -euo pipefail
 SKILL="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

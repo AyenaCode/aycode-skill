@@ -34,7 +34,7 @@ Chaque étape finit sur un critère vérifiable. Passe à la suivante quand il e
 
 ### 0. Outils
 
-`video-verticale doctor`. Si la commande est introuvable : `bash ${CLAUDE_SKILL_DIR}/install.sh` (sans sudo). `doctor` affiche le dossier des skills `montage-youtube` et `pub-video` : les étapes suivantes lisent leurs fichiers. Dans la branche sujet, lance aussi `pub-video doctor`.
+`bash ${CLAUDE_SKILL_DIR}/install.sh` (sans sudo, rapide une fois tout installé). Il installe aussi `montage-youtube` et `pub-video` quand ils sont à côté, pointe les trois commandes sur cette version, même après une mise à jour, puis lance les trois `doctor`. `video-verticale doctor` affiche le dossier des skills `montage-youtube` et `pub-video` : les étapes suivantes lisent leurs fichiers.
 
 **Fini quand** chaque `doctor` lancé écrit « Tout le nécessaire est installé ».
 

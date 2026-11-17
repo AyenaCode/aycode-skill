@@ -1,6 +1,6 @@
 // doctor: check every tool the skill relies on and say how to install what is missing.
 import { join } from 'node:path';
-import { montage, skillDir } from './freres.mjs';
+import { installHint, montage, skillDir } from './freres.mjs';
 import { run, SKILL, which } from './util.mjs';
 
 export const booleans = ['help'];
@@ -35,7 +35,7 @@ export default async function (_cmd, a) {
 	const dirs = {};
 	for (const s of ['montage-youtube', 'pub-video']) {
 		dirs[s] = await skillDir(s);
-		add(!!dirs[s], `skill ${s}`, dirs[s], `Copie le skill ${s} dans ~/.claude/skills/ puis lance son install.sh.`);
+		add(!!dirs[s], `skill ${s}`, dirs[s], `${installHint(s)}.`);
 	}
 	add(!!(await which('video-verticale')), 'commande video-verticale', 'dans le PATH', `Lance : bash ${join(SKILL, 'install.sh')}`);
 

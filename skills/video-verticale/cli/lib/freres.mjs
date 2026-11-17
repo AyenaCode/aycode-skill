@@ -5,12 +5,11 @@ import { existsSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { which } from './util.mjs';
+import { SKILL, which } from './util.mjs';
 
-const INSTALL = {
-	'montage-youtube': 'copie le skill montage-youtube dans ~/.claude/skills/ puis lance « bash ~/.claude/skills/montage-youtube/install.sh »',
-	'pub-video': 'copie le skill pub-video dans ~/.claude/skills/ puis lance « bash ~/.claude/skills/pub-video/install.sh »'
-};
+// How to get a missing sibling: the aycode plugin ships them together, and install.sh sets up the ones next to it.
+export const installHint = (cmd) =>
+	`installe le plugin aycode complet (« /plugin install aycode@aycode ») ou copie le skill ${cmd} à côté de video-verticale, puis relance « bash ${join(SKILL, 'install.sh')} »`;
 
 // Skill folder of a sibling command, or null when it is not installed.
 export async function skillDir(cmd) {
@@ -21,7 +20,7 @@ export async function skillDir(cmd) {
 }
 export async function needSkill(cmd) {
 	const dir = await skillDir(cmd);
-	if (!dir) throw new Error(`la commande ${cmd} est introuvable : ${INSTALL[cmd]}.`);
+	if (!dir) throw new Error(`la commande ${cmd} est introuvable : ${installHint(cmd)}.`);
 	return dir;
 }
 async function load(cmd, rel) {

@@ -29,7 +29,7 @@ Chaque étape finit sur un critère vérifiable. Passe à la suivante quand il e
 
 ### 0. Outils
 
-`pub-video doctor`. Si la commande est introuvable ou signale un manque : `bash ${CLAUDE_SKILL_DIR}/install.sh` (installation unique, sans sudo). Un outil système absent (FFmpeg, Node) se demande à l'utilisateur avec la commande affichée.
+`bash ${CLAUDE_SKILL_DIR}/install.sh` (sans sudo, rapide une fois tout installé). Il pointe la commande `pub-video` sur cette version du skill, même après une mise à jour, puis lance `pub-video doctor`. Un outil système absent (FFmpeg, Node) se demande à l'utilisateur avec la commande affichée.
 
 **Fini quand** `pub-video doctor` écrit « Tout le nécessaire est installé ».
 

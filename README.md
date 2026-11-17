@@ -1,6 +1,6 @@
 # aycode-skill
 
-Skills pour Claude Code. Chaque skill a son propre dossier dans `skills/`.
+Skills pour les agents de code, livrés en plugin Claude Code. Chaque skill a son propre dossier dans `skills/`.
 
 ## Skills
 
@@ -13,13 +13,32 @@ Skills pour Claude Code. Chaque skill a son propre dossier dans `skills/`.
 
 ## Installation
 
-```bash
-git clone https://github.com/AyenaCode/aycode-skill.git
-mkdir -p ~/.claude/skills
-cp -r aycode-skill/skills/<skill> ~/.claude/skills/
+### Claude Code
+
+Dans Claude Code :
+
+```
+/plugin marketplace add AyenaCode/aycode-skill
+/plugin install aycode@aycode
 ```
 
-Remplace `<skill>` par le nom du skill, par exemple `pentester`. Il s'appelle ensuite avec `/<skill>` dans Claude Code.
+Ou depuis le terminal, en une ligne :
+
+```bash
+claude plugin install aycode --marketplace AyenaCode/aycode-skill
+```
+
+Les skills s'appellent ensuite avec `/aycode:<skill>`, par exemple `/aycode:pentester`.
+
+Pour recevoir les mises à jour, active la mise à jour automatique dans `/plugin` > Marketplaces > `aycode`. Sinon, lance `claude plugin update aycode@aycode`.
+
+### Autres agents de code (Codex, Cursor, OpenCode…)
+
+```bash
+npx skills add AyenaCode/aycode-skill
+```
+
+Ajoute `-g` pour tous tes projets, ou `--skill pentester` pour un seul skill. Les skills vidéo sont faits pour Claude Code : ailleurs, lance toi-même leur `install.sh` avant le premier usage.
 
 ## pub-video
 
@@ -30,7 +49,7 @@ Remplace `<skill>` par le nom du skill, par exemple `pentester`. Il s'appelle en
 - Optionnel : `yt-dlp`, pour télécharger une vidéo de référence
 - Optionnel : `whisper.cpp`, pour transcrire une référence et caler la voix off
 
-Au premier usage, le skill lance `install.sh`, sans sudo. Ce script installe les dépendances Node, un Chromium sans écran et la commande `pub-video` dans `~/.local/bin`. Ensuite, `pub-video doctor` vérifie que tout est en place.
+À chaque usage, le skill lance `install.sh`, sans sudo. La première fois, ce script installe les dépendances Node, un Chromium sans écran et la commande `pub-video` dans `~/.local/bin`. Les fois suivantes, il ne fait que pointer la commande sur la version à jour du skill. Ensuite, `pub-video doctor` vérifie que tout est en place.
 
 ## montage-youtube
 
@@ -41,16 +60,16 @@ Au premier usage, le skill lance `install.sh`, sans sudo. Ce script installe les
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp) et un modèle (`large-v3-turbo` conseillé, `small` suffit pour commencer)
 - Optionnel : `yt-dlp`, pour mesurer une vidéo de référence en ligne
 
-Au premier usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `montage-youtube` dans `~/.local/bin`. Ensuite, `montage-youtube doctor` vérifie que tout est en place. Si whisper.cpp n'est pas dans `~/whisper.cpp`, indique son chemin avec les variables `WHISPER_CLI` et `WHISPER_MODEL`.
+À chaque usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `montage-youtube` dans `~/.local/bin`, pointée sur la version à jour du skill. Ensuite, `montage-youtube doctor` vérifie que tout est en place. Si whisper.cpp n'est pas dans `~/whisper.cpp`, indique son chemin avec les variables `WHISPER_CLI` et `WHISPER_MODEL`.
 
 ## video-verticale
 
 ### Prérequis
 
-- Les skills `montage-youtube` et `pub-video`, installés : il reprend leur montage, leur transcription, leur musique, leurs bruitages et leur mixage
+- Les skills `montage-youtube` et `pub-video`, fournis avec le plugin : il reprend leur montage, leur transcription, leur musique, leurs bruitages et leur mixage
 - FFmpeg avec libass (sous-titres incrustés), comme celui des paquets Ubuntu ou Homebrew
 
-Au premier usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `video-verticale` dans `~/.local/bin`. Ensuite, `video-verticale doctor` vérifie que tout est en place, skills frères compris. La police des sous-titres (Montserrat Black par défaut) se télécharge depuis Google Fonts dans chaque projet.
+À chaque usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `video-verticale` dans `~/.local/bin` et installe aussi ses deux skills frères quand ils sont à côté. Ensuite, `video-verticale doctor` vérifie que tout est en place, skills frères compris. La police des sous-titres (Montserrat Black par défaut) se télécharge depuis Google Fonts dans chaque projet.
 
 ## Licence
 

@@ -1,0 +1,12 @@
+{
+  "name": "aycode",
+  "description": "Skills AyenaCode pour Claude Code",
+  "owner": { "name": "AyenaCode" },
+  "plugins": [
+    {
+      "name": "aycode",
+      "source": "./",
+      "description": "Pub vidéo, montage YouTube, vidéo verticale et revue de sécurité pour les agents de code"
+    }
+  ]
+}
