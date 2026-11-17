@@ -44,7 +44,7 @@ Lis la demande : `$ARGUMENTS` et la conversation. Ce qui n'est pas dit se décid
 | Durée | 30 s environ : un nombre entier de mesures de la musique |
 | Langue | celle du produit |
 | Plateforme | publication organique (zone sûre `universal`) ; pub payante → `safe: 'ads'` |
-| Voix off | écrite par toi, enregistrée ensuite par l'utilisateur |
+| Voix off | écrite par toi, enregistrée ensuite par l'utilisateur ; générée avec sa voix clonée (voicebox) s'il le demande |
 
 Pose une question seulement si le produit est inaccessible, si deux produits sont possibles, ou si deux consignes se contredisent. Sinon, annonce tes choix en une phrase et avance.
 
@@ -113,9 +113,9 @@ Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisa
 
 **Fini quand** l'utilisateur a les chemins, les réserves et le texte à enregistrer.
 
-### 10. Voix enregistrée
+### 10. Voix enregistrée ou générée
 
-Quand l'utilisateur fournit sa ou ses prises : lis [`references/voix.md`](references/voix.md).
+Quand l'utilisateur fournit sa ou ses prises, ou que la demande prévoit une voix de synthèse : lis [`references/voix.md`](references/voix.md).
 
 **Fini quand** `exports/<vidéo>-<durée>s_avec-voix.mp4` existe et que le tableau de `voice mix` ne montre aucune réplique qui déborde.
 

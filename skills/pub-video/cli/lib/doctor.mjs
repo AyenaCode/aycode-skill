@@ -58,6 +58,8 @@ export default async function (_cmd, a) {
 	add(!!yt, 'yt-dlp (vidéos de référence)', yt, 'Optionnel. Utile seulement pour télécharger une vidéo de référence.', true);
 	const wh = await findWhisper();
 	add(!!wh, 'whisper.cpp (texte parlé)', wh ? `${wh.bin} · ${wh.model.split('/').pop()}` : '', 'Optionnel. Sert à transcrire une référence et à caler la voix off enregistrée.', true);
+	const vb = await (await import('./voicebox.mjs')).connect();
+	add(!!vb.url, 'voicebox (voix de synthèse)', vb.url, 'Optionnel. Génère la voix off avec une voix clonée (https://github.com/jamiepine/voicebox) ; profils : « pub-video voice profils ».', true);
 
 	for (const [s, n, d] of rows) console.log(`${s} ${n.padEnd(34)} ${d ?? ''}`);
 	console.log(`\nDossier du skill : ${SKILL}\nDémo technique   : ${join(SKILL, 'demo', 'videos', 'demo.html')}`);

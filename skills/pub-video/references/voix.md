@@ -1,6 +1,6 @@
 # La voix off : de l'enregistrement au mixage
 
-Le script est déjà dans `audio/voix/<vidéo>.txt` (voir [`concept.md`](concept.md)). Ici : aider l'utilisateur à l'enregistrer, puis poser sa voix sur la pub.
+Le script est déjà dans `audio/voix/<vidéo>.txt` (voir [`concept.md`](concept.md)). Ici : aider l'utilisateur à l'enregistrer, ou la générer avec sa voix clonée, puis poser la voix sur la pub.
 
 ## 1. Préparer l'enregistrement
 
@@ -22,6 +22,23 @@ Donne à l'utilisateur, dans la livraison :
    - dire tout le script d'une traite en laissant **une vraie pause d'une seconde entre deux répliques**, ou enregistrer un fichier par réplique ;
    - faire deux ou trois prises et garder la meilleure ; sourire en parlant, articuler les chiffres.
 3. Où déposer le ou les fichiers : `audio/voix/` du projet (ou le dossier de prises habituel de l'utilisateur).
+
+## Voix de synthèse (voicebox)
+
+Quand la demande le prévoit, la voix off se génère au lieu de s'enregistrer : [voicebox](https://github.com/jamiepine/voicebox) tourne sur la machine de l'utilisateur et dit le script avec un profil de voix clonée.
+
+```
+pub-video voice profils --profil <nom>                                  # code 0 : voicebox répond et le profil existe
+pub-video voice synth <vidéo> --profil <nom> --consigne "<ton>"         # une prise par réplique → audio/voix/prises/
+```
+
+- **Le profil** se crée une fois dans voicebox, par l'utilisateur, avec sa propre voix ou une voix qu'il a le droit d'utiliser.
+- **Le ton** : `--consigne` décrit la façon de dire en quelques mots (« énergique, rythme rapide, souriant ») ; les moteurs Qwen la suivent. `--tempo 1.05` accélère toutes les prises sans changer la hauteur.
+- **Tu n'entends pas les prises, tu les mesures** : `synth` compare la durée parlée de chaque prise à celle attendue pour son texte et marque `SILENCE`, `TROP LONGUE ?` ou `TROP COURTE ?`. Refais chaque prise marquée avec `--ligne <n> --seed <nombre>` jusqu'à ce qu'aucune ne le soit.
+- **Licence** : `synth` refuse OmniVoice, sous licence non commerciale. Note le moteur et le profil dans `brief.md`.
+- **La livraison le dit** : la voix est de synthèse. L'utilisateur la signale comme contenu généré par IA là où la plateforme le demande.
+
+Le mixage est ensuite celui d'une voix enregistrée : la commande qu'affiche `synth`, lue avec la section 2.
 
 ## 2. Mixer la voix reçue
 

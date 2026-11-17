@@ -15,7 +15,7 @@ const COMMANDS = {
 	check: ['check.mjs', 'check <vidéo> : contrôles automatiques (zones sûres, lisibilité, déterminisme…)'],
 	preview: ['build.mjs', 'preview <vidéo> : rendu rapide demi-taille avec le son'],
 	build: ['build.mjs', 'build <vidéo> : rendu final, son, mastering, export'],
-	voice: ['voice.mjs', 'voice check|guide|mix : durée des répliques, guide d’enregistrement, mixage de la voix'],
+	voice: ['voice.mjs', 'voice check|guide|profils|synth|mix : durée des répliques, guide d’enregistrement, voix de synthèse, mixage'],
 	help: [null, 'cette aide']
 };
 

@@ -8,6 +8,7 @@ import { projectRoot, videoFile, ffmpeg, run, fmt, num, pad } from './util.mjs';
 import { openVideo } from './browser.mjs';
 import { loudness } from './audio.mjs';
 import { decode, len, SR } from './dsp.mjs';
+import { connect, engineProblem, pick, profiles, speak } from './voicebox.mjs';
 
 export const booleans = ['help'];
 const HELP = `Le script : audio/voix/<vidéo>.txt, une ligne par réplique, au choix :
@@ -22,6 +23,13 @@ pub-video voice check <vidéo> [--rate 5.2]
 pub-video voice guide <vidéo>
     Écrit exports/<vidéo>_voix-off.srt (sous-titres) et exports/<vidéo>_guide-voix.mp4 : la pub en petit, avec un
     décompte puis chaque réplique affichée au moment de la dire. À regarder au casque pendant l'enregistrement.
+pub-video voice profils [--profil <nom>] [--url http://127.0.0.1:17493]
+    Voix de synthèse locale (voicebox) : dit si le serveur répond et liste ses profils de voix.
+    Code de sortie 1 si voicebox ne répond pas, ou si le profil donné par --profil n'existe pas.
+pub-video voice synth <vidéo> --profil <nom> [--consigne "énergique, rapide"] [--tempo 1.05] [--ligne 3] [--moteur qwen] [--url …]
+    Dit chaque réplique avec la voix clonée du profil → audio/voix/prises/<vidéo>-01.wav, -02.wav…, puis affiche
+    la commande de mixage. --consigne : le ton (moteurs Qwen) ; --tempo : accélère sans changer la hauteur ;
+    --ligne : refait une seule réplique ; --langue : sinon celle de la vidéo (<html lang>).
 pub-video voice mix <vidéo> <prise.wav> | <prise1> <prise2> …  [--cuts t1,t2,…] [--lead 0.06] [--max-tempo 1.12]
     Une prise par réplique (dans l'ordre), ou une seule prise de tout le script avec une pause entre les répliques.
     Nettoie chaque prise, la pose sur sa scène, l'accélère un peu si elle déborde, puis refait le mixage et
@@ -119,11 +127,34 @@ export async function voiced(file, { threshold = -45, hold = 0.05, pre = 0.02, p
 	return [Math.max(0, (first * hop) / SR - pre), Math.min(L.length / SR, (last * hop + win) / SR + post)];
 }
 
+// Voice profiles of the local voicebox server. Exit code 1 when the server is down or --profil is not among them.
+async function listProfiles(a) {
+	const server = await connect(a.url === true ? undefined : a.url);
+	if (!server.url) {
+		console.log(`voicebox ne répond pas (essayé : ${server.tried.join(', ')}).\n  Lance l'application voicebox ou son conteneur Docker, ou donne son adresse avec --url.\n  Sans voicebox, la voix off s'enregistre à la main (pub-video voice guide).`);
+		process.exit(1);
+	}
+	const h = server.health;
+	console.log(`voicebox : ${server.url} · carte graphique : ${h.gpu_available ? h.gpu_type || 'oui' : 'non (génération plus lente)'}`);
+	const list = await profiles(server);
+	if (!list.length) console.log(`  aucun profil de voix : crée-le une fois dans voicebox, à partir d'un enregistrement de la voix.`);
+	for (const p of list) console.log(`  ${pad(p.name, 22)}id ${p.id} · moteur ${p.default_engine || 'par défaut'} · langue ${p.language || '?'} · ${p.sample_count ?? 0} échantillon(s)`);
+	if (a.profil && a.profil !== true) {
+		const p = pick(list, a.profil);
+		if (!p) {
+			console.log(`\nLe profil « ${a.profil} » n'existe pas dans voicebox.`);
+			process.exit(1);
+		}
+		console.log(`\nProfil « ${p.name} » prêt.`);
+	}
+}
+
 export default async function (_cmd, a) {
 	const sub = a._[0];
 	if (a.help || !sub) return console.log(HELP);
+	if (sub === 'profils') return listProfiles(a);
 	const root = projectRoot();
-	const { name } = videoFile(root, a._[1]);
+	const { name, file } = videoFile(root, a._[1]);
 	const page = await openVideo(root, name);
 	const meta = page.meta;
 	await page.close();
@@ -175,6 +206,49 @@ export default async function (_cmd, a) {
 		const out = join(root, 'exports', `${name}_guide-voix.mp4`);
 		await ffmpeg(['-i', src, '-filter_complex', `[0:v]scale=${w}:${h},tpad=start_duration=${LEAD}:color=black,ass='${ass.replace(/[\\:']/g, '\\$&')}'[v];[0:a]adelay=${LEAD * 1000}:all=1,volume=-8dB[a]`, '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '24', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', out]);
 		console.log(`  guide d'enregistrement → ${out}`);
+		return;
+	}
+
+	if (sub === 'synth') {
+		if (!a.profil || a.profil === true) throw new Error('donne le profil de voix : --profil <nom> (la liste : pub-video voice profils).');
+		const server = await connect(a.url === true ? undefined : a.url);
+		if (!server.url) throw new Error(`voicebox ne répond pas (essayé : ${server.tried.join(', ')}). Lance-le, ou enregistre la voix à la main (pub-video voice guide).`);
+		const list = await profiles(server);
+		const p = pick(list, a.profil);
+		if (!p) throw new Error(`profil « ${a.profil} » introuvable dans voicebox. Profils : ${list.map((x) => x.name).join(', ') || 'aucun'}.`);
+		const language = String(a.langue ?? /<html[^>]*\blang="([a-z]{2})/i.exec(await readFile(file, 'utf8'))?.[1] ?? 'fr').toLowerCase();
+		const engine = a.moteur ? String(a.moteur) : p.default_engine || undefined;
+		const why = engine && engineProblem(engine, language);
+		if (why) throw new Error(`${why}. Choisis un autre moteur avec --moteur (qwen ou chatterbox parlent français).`);
+		const tempo = num(a.tempo, 1);
+		if (!(tempo >= 0.8 && tempo <= 1.3)) throw new Error('--tempo va de 0,8 à 1,3.');
+		const only = a.ligne ? [Number(a.ligne)] : lines.map((_, i) => i + 1);
+		if (only.some((n) => !Number.isInteger(n) || n < 1 || n > lines.length)) throw new Error(`--ligne va de 1 à ${lines.length}.`);
+		const dir = join(root, 'audio', 'voix', 'prises');
+		await mkdir(dir, { recursive: true });
+		const take = (n) => join(dir, `${name}-${String(n).padStart(2, '0')}.wav`);
+		console.log(`Voix « ${p.name} » · ${engine ?? 'moteur par défaut'} · ${language}${a.consigne && a.consigne !== true ? ` · consigne : ${a.consigne}` : ''}`);
+		console.log(`  ${pad('n°', 7)}${pad('dit en', 8)}${pad('attendu', 9)}${pad('calcul', 9)}texte`);
+		const odd = [];
+		for (const n of only) {
+			const got = `${take(n)}.voicebox`;
+			const t0 = Date.now();
+			await speak(server, { text: lines[n - 1].text, profile: p.id, language, engine: a.moteur ? engine : undefined, instruct: a.consigne === true ? undefined : a.consigne, seed: a.seed }, got);
+			await ffmpeg(['-i', got, '-af', tempo !== 1 ? `atempo=${tempo}` : 'anull', '-ac', '1', '-ar', '48000', take(n)]);
+			await run('rm', ['-f', got]);
+			// A failed generation shows in its length: silence, or speech far longer or shorter than its text.
+			const span = await voiced(take(n));
+			const said = span ? span[1] - span[0] : 0;
+			const want = lines[n - 1].syl / 5.2;
+			const flag = !span ? 'SILENCE  ' : said > want * 1.7 ? 'TROP LONGUE ?  ' : said < want * 0.55 ? 'TROP COURTE ?  ' : '';
+			if (flag) odd.push(n);
+			console.log(`  ${pad(`${n}/${lines.length}`, 7)}${pad(`${fmt(said, 1)} s`, 8)}${pad(`${fmt(want, 1)} s`, 9)}${pad(`${fmt((Date.now() - t0) / 1000, 0)} s`, 9)}${flag}${lines[n - 1].text.slice(0, 60)}`);
+		}
+		const all = lines.map((_, i) => relative(root, take(i + 1)));
+		const missing = all.filter((f) => !existsSync(join(root, f)));
+		if (odd.length) console.log(`\n  Réplique(s) ${odd.join(', ')} : durée anormale pour leur texte. Refais-les une à une avec --ligne <n> --seed <nombre>.`);
+		console.log(missing.length ? `\n  Il manque ${missing.join(', ')} : relance sans --ligne.` : `\n  Prises → audio/voix/prises/. Mixage :\n  pub-video voice mix ${name} ${all.join(' ')}`);
+		if (odd.length) process.exitCode = 1;
 		return;
 	}
 
@@ -237,5 +311,5 @@ export default async function (_cmd, a) {
 		await (await import('./build.mjs')).default('build', { _: [name], 'skip-video': true });
 		return;
 	}
-	throw new Error(`sous-commande inconnue « ${sub} » (check, guide, mix).`);
+	throw new Error(`sous-commande inconnue « ${sub} » (check, guide, profils, synth, mix).`);
 }
