@@ -12,6 +12,7 @@ Skills pour les agents de code, livrés en plugin Claude Code. Chaque skill a so
 | [`pentester`](skills/pentester/SKILL.md) | Relit le code en pensant comme un attaquant, sans rien attaquer. Couvre le mobile (React Native), les API, le web et l'infra (Docker, Kubernetes, CI). Il écrit un rapport Markdown simple, avec la gravité et le correctif de chaque faille. |
 | [`montage-youtube`](skills/montage-youtube/SKILL.md) | Monte une vidéo YouTube à partir de rushs enregistrés, face caméra ou capture d'écran commentée. Il coupe les silences, les hésitations et les reprises, nettoie la voix, puis exporte le `.mp4` et ses sous-titres `.srt`. Une vidéo de référence peut fixer le rythme. |
 | [`video-verticale`](skills/video-verticale/SKILL.md) | Fabrique une vidéo verticale pour Reels, TikTok et Shorts, à partir d'un sujet (motion design) ou d'un enregistrement vertical. Il dérushe, incruste des sous-titres animés mot à mot, ajoute un titre d'accroche, des zooms sur les coupes, une musique baissée sous la voix et des bruitages, puis exporte le `.mp4` et sa couverture. |
+| [`publish`](skills/publish/SKILL.md) | Produit les vidéos verticales du jour (3 par défaut). Il cherche les sujets qui ont de la demande, fait fabriquer chaque vidéo par `video-verticale` et `pub-video`, génère la voix off avec ta voix clonée (voicebox) ou te donne les textes à enregistrer, contrôle le tout et livre les vidéos avec leur légende. |
 
 ## Installation
 
@@ -67,6 +68,7 @@ Les règles du projet (`CLAUDE.md`, `AGENTS.md`) passent avant celles des skills
 - FFmpeg, avec ffprobe
 - Optionnel : `yt-dlp`, pour télécharger une vidéo de référence
 - Optionnel : `whisper.cpp`, pour transcrire une référence et caler la voix off
+- Optionnel : [voicebox](https://github.com/jamiepine/voicebox), pour générer la voix off avec une voix clonée (`pub-video voice synth`)
 
 À chaque usage, le skill lance `install.sh`, sans sudo. La première fois, ce script installe les dépendances Node, un Chromium sans écran et la commande `pub-video` dans `~/.local/bin`. Les fois suivantes, il ne fait que pointer la commande sur la version à jour du skill. Ensuite, `pub-video doctor` vérifie que tout est en place.
 
@@ -89,6 +91,29 @@ Les règles du projet (`CLAUDE.md`, `AGENTS.md`) passent avant celles des skills
 - FFmpeg avec libass (sous-titres incrustés), comme celui des paquets Ubuntu ou Homebrew
 
 À chaque usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `video-verticale` dans `~/.local/bin` et installe aussi ses deux skills frères quand ils sont à côté. Ensuite, `video-verticale doctor` vérifie que tout est en place, skills frères compris. La police des sous-titres (Montserrat Black par défaut) se télécharge depuis Google Fonts dans chaque projet.
+
+## publish
+
+```
+/aycode:publish [consigne du jour]
+/aycode:publish finir
+```
+
+Lance-le depuis ton atelier vidéo, le dossier où vivent tes projets. Il y crée `publish/` : ta ligne éditoriale (`ligne.md`, remplie au premier lancement), le journal des vidéos déjà faites et une page par journée, qui sert aussi de mémoire pour reprendre.
+
+1. Il cherche des sujets qui ont de la demande, dans trois créneaux : une actu de la semaine, une astuce durable et ton domaine d'expertise. Chaque fait vient d'une source primaire, avec sa date.
+2. Il fait fabriquer chaque vidéo par `video-verticale` et `pub-video`, l'une après l'autre, chacune par un sous-agent.
+3. La voix off :
+   - **automatique** si [voicebox](https://github.com/jamiepine/voicebox) tourne sur ta machine et que le profil de ta voix clonée est noté dans `ligne.md` : les vidéos sortent finies ;
+   - **manuelle** sinon : il te donne les textes, réplique par réplique, et le dossier où déposer tes fichiers (enregistrés ou générés ailleurs). Ensuite, `/aycode:publish finir` termine les vidéos.
+4. Il contrôle chaque vidéo, puis te livre les fichiers, leur couverture, une légende prête à coller et les sources.
+
+Il ne publie rien : la publication reste à toi.
+
+### Prérequis
+
+- Les skills `video-verticale`, `pub-video` et `montage-youtube`, fournis avec le plugin
+- Optionnel : voicebox, avec un profil créé une fois à partir d'un enregistrement de ta voix. Sur Linux, il n'y a pas encore de version prête à installer : compile-le, ou lance son `docker-compose.yml` (adresse `http://127.0.0.1:17600`). `pub-video voice profils` dit si la commande le trouve.
 
 ## Licence
 
