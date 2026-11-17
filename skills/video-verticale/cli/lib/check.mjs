@@ -88,6 +88,8 @@ export default async function (_cmd, a) {
 	}
 	// Zooms.
 	for (const z of cfg.zooms) if (z.z > 1.3 || z.z < 1 || z.t < 0 || z.t >= r.duration) warns.push(`zoom ×${z.z} à ${tc(z.t)} : hors de 1 à 1,3, ou hors de la vidéo.`);
+	// Caption height changes (their place in the safe zone is measured below with the captions).
+	for (const s of cfg.sous_titres.hauteurs ?? []) if (s.t < 0 || s.t >= r.duration) warns.push(`changement de hauteur des sous-titres à ${tc(s.t)} : hors de la vidéo.`);
 	// Uncertain words the user should confirm.
 	const fixed = new Set(Object.keys(cfg.sous_titres.corrections ?? {}));
 	const doubt = words.words.filter((w) => w.p !== undefined && w.p < 0.5 && !fixed.has(bare(w.t)));

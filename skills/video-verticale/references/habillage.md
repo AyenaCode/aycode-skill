@@ -9,7 +9,8 @@ But : décider chaque champ de `verticale.json`, puis juger le résultat sur les
 | `style` | `pop` : 2 ou 3 mots, le mot dit passe en couleur, chaque groupe entre en rebondissant. `mot` : un mot à la fois, très gros. `ligne` : une ou deux lignes posées, remplies au rythme de la voix. `aucun` : pas de sous-titres. | `pop` par défaut. `mot` pour un débit rapide et un ton énergique. `ligne` pour un ton posé, une explication, une citation. |
 | `taille` | taille de la police (120 par défaut) | Le style ajuste déjà (`mot` plus gros, `ligne` plus petit). Baisse-la si un groupe déborde ; ne descends pas sous 90. |
 | `couleur`, `accent` | texte, et mot dit ou mot fort (`#RRGGBB`) | La couleur de la marque de l'utilisateur en accent s'il en a une, sinon jaune `#FFD400`. Le texte reste blanc. |
-| `hauteur` | centre des sous-titres, en part de la hauteur (0,68 par défaut) | Sous le visage, au-dessus de la zone des boutons. Entre 0,55 et 0,72 ; plus haut si le bas de l'image porte l'action. |
+| `hauteur` | centre des sous-titres, en part de la hauteur (0,68 par défaut, 0,6 en zone `ads`) | Sous le visage, au-dessus de la zone des boutons. Entre 0,55 et 0,72 (0,6 au plus en zone `ads`) ; plus haut si le bas de l'image porte l'action. |
+| `hauteurs` | changements de hauteur en cours de vidéo : `[{ "t": 12.4, "h": 0.72 }, { "t": 18, "h": 0.68 }]`. À partir de `t`, les sous-titres sont centrés à `h`, jusqu'au changement suivant ; avant le premier, `hauteur` | Vide par défaut. Quand un passage montre derrière les sous-titres quelque chose qu'il faut voir (texte, chiffre, bouton, geste), déplace-les pour ce passage, puis remets `hauteur` après. Plus bas : 0,72 au plus, car en dessous ce sont les boutons et la description de la plateforme (0,6 en zone `ads`). Plus haut : 0,2 au moins, et seulement après la fin du titre d'accroche. `t` se prend au début d'un groupe (temps `a` d'un mot dans `work/mots.json`) : un groupe déjà affiché ne bouge pas. |
 | `majuscules` | tout en capitales | Oui pour `pop` et `mot`, non pour `ligne`. |
 | `mots_max` | mots par groupe en `pop` | 3 ; 2 pour un débit très rapide. |
 | `emphase` | mots forts, en couleur d'accent et plus gros | 2 à 4 pour 30 s : les chiffres, le mot de la promesse, le résultat. Un mot ou une suite de mots, écrits comme ils sont dits. |
@@ -70,5 +71,5 @@ Ouvre chaque planche et vérifie chaque point. Note chaque défaut vu et sa corr
 **Passe 2, l'image**
 
 - Le visage et l'action restent entiers à chaque zoom et après le recadrage.
-- Rien d'important n'est caché sous les sous-titres ni dans les bandes que l'interface couvre (en haut, à droite, en bas).
+- Rien d'important n'est caché sous les sous-titres ni dans les bandes que l'interface couvre (en haut, à droite, en bas). Ce que les sous-titres cachent sur un passage se règle avec `hauteurs` pour ce passage seul.
 - Les zooms tombent sur les coupes : aucun saut ne reste visible sans zoom.

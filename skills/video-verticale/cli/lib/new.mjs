@@ -59,7 +59,9 @@ export default async function (cmd, a) {
 			accent: '#FFD400',
 			contour: 8,
 			ombre: 4,
-			hauteur: 0.68,
+			// Ads keep the bottom 35 % free: the default line must sit above it.
+			hauteur: a.zone === 'ads' ? 0.6 : 0.68,
+			hauteurs: [],
 			majuscules: true,
 			mots_max: 3,
 			emphase: [],

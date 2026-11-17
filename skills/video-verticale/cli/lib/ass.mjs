@@ -151,6 +151,19 @@ function lines(g, chars) {
 const OVERSHOOT = 1.06;
 const POP = '\\fscx70\\fscy70\\t(0,80,\\fscx106\\fscy106)\\t(80,150,\\fscx100\\fscy100)';
 
+// Caption centre (y in pixels) at time t: `hauteur` until the first change of `hauteurs`, then each change
+// from its time `t` until the next one, like the zooms.
+function heightAt(cfg, L) {
+	const list = cfg.sous_titres.hauteurs ?? [];
+	for (const s of list) if (!Number.isFinite(s?.t) || !Number.isFinite(s?.h) || s.h <= 0 || s.h >= 1) throw new Error(`sous_titres.hauteurs : ${JSON.stringify(s)} ; chaque changement s’écrit { "t": secondes, "h": part de la hauteur, entre 0 et 1 }.`);
+	const steps = [...list].sort((x, y) => x.t - y.t);
+	return (t) => {
+		let h = null;
+		for (const s of steps) if (s.t <= t + 1e-6) h = s.h;
+		return h === null ? L.y : Math.round(L.H * h);
+	};
+}
+
 function captionEvents(words, cfg, L) {
 	const st = cfg.sous_titres;
 	const marks = emphasised(words, st.emphase);
@@ -158,8 +171,10 @@ function captionEvents(words, cfg, L) {
 	const gs = groups(ws, cfg, L);
 	const ev = [];
 	const big = Math.round(L.size * 1.15);
-	const pos = `\\an5\\pos(${L.x},${L.y})`;
+	const yAt = heightAt(cfg, L);
 	gs.forEach((g, gi) => {
+		// A group keeps the height in force when it appears: it never jumps while on screen.
+		const pos = `\\an5\\pos(${L.x},${yAt(g[0].a)})`;
 		const next = gs[gi + 1]?.[0].a ?? Infinity;
 		let end = Math.min(g.at(-1).b + 0.25, next);
 		if (next - end < 0.3) end = Math.min(next, g.at(-1).b + 1.2);
