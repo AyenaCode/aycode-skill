@@ -125,8 +125,12 @@ export async function readSource(root, cfg) {
 			const wav = join(root, 'work', 'voix.wav');
 			await ffmpeg(['-i', voice, '-map', '0:a:0', '-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', wav]);
 			const { transcribe } = await montage.whisper();
-			const r = await transcribe(wav, join(root, 'work', 'voix'), { lang: cfg.lang });
+			// recale: whisper dates words late (0.13 to 0.24 s on six voice-overs); the delay is measured on
+			// this voice and taken off, so a subtitle lights up on its word.
+			const r = await transcribe(wav, join(root, 'work', 'voix'), { lang: cfg.lang, recale: true });
 			if (cfg.lang === 'auto' && r.lang) cfg.lang = r.lang;
+			lag = r.lag ?? 0;
+			if (lag) console.log(`  mots avancés de ${fmt(lag, 2)} s : la transcription les datait en retard sur la voix.`);
 			words = r.words.map((w, i, ws) => ({ t: w.t, a: round(w.a), b: round(Math.min(ws[i + 1]?.a ?? m.duration, w.a + 0.9)), p: Math.round((w.p ?? 1) * 100) / 100 }));
 			// whisper writes words over silence ("you", "Thank you."): a word with no sound under it goes.
 			const { readWav } = await montage.util();
@@ -142,13 +146,6 @@ export async function readSource(root, cfg) {
 			const before = words.length;
 			words = words.filter(heard);
 			if (words.length < before) console.log(`  ${before - words.length} mot(s) écrit(s) sur du silence par la transcription : retiré(s).`);
-			// whisper dates a word when its alignment reaches it, which falls after the sound starts:
-			// 0.13 to 0.24 s late on six measured voice-overs. The delay is measured on this voice and taken off.
-			lag = lateness(x, words);
-			if (lag) {
-				words = words.map((w) => ({ ...w, a: round(Math.max(0, w.a - lag)), b: round(Math.max(0, w.b - lag)) }));
-				console.log(`  mots avancés de ${fmt(lag, 2)} s : la transcription les datait en retard sur la voix.`);
-			}
 		}
 		out = { words, cuts: [], duration: m.duration, mode: 'fichier', ...(lag ? { avance: lag } : {}) };
 	}
@@ -159,41 +156,6 @@ export async function readSource(root, cfg) {
 	const doubt = out.words.filter((w) => w.p !== undefined && w.p < 0.5);
 	if (doubt.length) console.log(`  à relire (transcription incertaine) : ${doubt.slice(0, 12).map((w) => `${w.t} (${tc(w.a)})`).join(', ')}`);
 	return out;
-}
-
-// How late the transcription dates words, in seconds: the median gap between each restart of the voice
-// after a silence (sound back above the floor) and the first word dated near it. 0 when the voice has
-// too few silences to tell, or when the gap is too small or too large to be this delay.
-export function lateness(x, words, { rate = 16000 } = {}) {
-	const F = Math.round(rate / 100); // 10 ms frames
-	const n = Math.floor(x.length / F);
-	const db = new Float32Array(n);
-	let peak = -Infinity;
-	for (let i = 0; i < n; i++) {
-		let e = 0;
-		for (let j = i * F; j < (i + 1) * F; j++) e += x[j] * x[j];
-		db[i] = 10 * Math.log10(e / F + 1e-12);
-		if (db[i] > peak) peak = db[i];
-	}
-	const floor = peak - 35;
-	const gaps = [];
-	let quiet = 0;
-	for (let i = 0; i < n; i++) {
-		if (db[i] <= floor) {
-			quiet++;
-			continue;
-		}
-		if (quiet >= 15) {
-			const t = i / 100;
-			const w = words.find((w) => w.a >= t - 0.15);
-			if (w && w.a <= t + 0.6) gaps.push(w.a - t);
-		}
-		quiet = 0;
-	}
-	if (gaps.length < 5) return 0;
-	gaps.sort((p, q) => p - q);
-	const median = gaps[gaps.length >> 1];
-	return median >= 0.04 && median <= 0.4 ? round(median) : 0;
 }
 
 // Punch-in on the cuts that show a jump (more than 0.5 s removed, or another rush), alternating

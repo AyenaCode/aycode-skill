@@ -44,7 +44,10 @@ export default async function (_cmd, a) {
 	console.log(`Transcription de la piste de voix (${Math.round(tl.duration / 60)} min)…`);
 	const wav = await voiceTrack(tl, join(work, 'voix-16k.wav'), 16000);
 	const { transcribe } = await montage.whisper();
-	const { words } = await transcribe(wav, join(work, 'voix'), { lang: cfg.langue || 'auto' });
+	// recale: whisper dates words late (0.13 to 0.24 s on six voice-overs); without it the keywords land after
+	// their word.
+	const { words, lag } = await transcribe(wav, join(work, 'voix'), { lang: cfg.langue || 'auto', recale: true });
+	if (lag) console.log(`  mots avancés de ${String(lag).replace('.', ',')} s : la transcription les datait en retard sur la voix.`);
 
 	const mots = loadMots(root);
 	const seuil = Number(a.seuil ?? 0.8);

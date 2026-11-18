@@ -73,11 +73,13 @@ export default async function (_cmd, a) {
 		console.log('Transcription (whisper.cpp)… plusieurs minutes pour une vidéo longue.');
 		await ffmpeg(['-i', video, '-vn', '-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', join(root, 'work', 'source-16k.wav')]);
 		const { transcribe } = await montage.whisper();
-		const t = await transcribe(join(root, 'work', 'source-16k.wav'), join(root, 'work', 'source'), { lang });
+		// recale: whisper dates words late; a passage cut from these times would lose its first syllable. Under
+		// music the voice has no silence to measure on, and the times stay as transcribed.
+		const t = await transcribe(join(root, 'work', 'source-16k.wav'), join(root, 'work', 'source'), { lang, recale: true });
 		words = t.words;
 		if (lang === 'auto' && t.lang) cfg.langue = t.lang;
 		saveConfig(root, cfg);
-		writeJson(join(root, 'work', 'source-mots.json'), { words, lang: t.lang, model: t.model });
+		writeJson(join(root, 'work', 'source-mots.json'), { words, lang: t.lang, model: t.model, ...(t.lag ? { avance: t.lag } : {}) });
 	}
 
 	// 3. Shot changes and contact sheets, in one pass over a small copy of the picture.
