@@ -1,8 +1,28 @@
-# La voix off : de l'enregistrement au mixage
+# La voix off : voix clonée, ou enregistrement, puis mixage
 
-Le script est déjà dans `audio/voix/<vidéo>.txt` (voir [`concept.md`](concept.md)). Ici : aider l'utilisateur à l'enregistrer, ou la générer avec sa voix clonée, puis poser la voix sur la pub.
+Le script est déjà dans `audio/voix/<vidéo>.txt` (voir [`concept.md`](concept.md)). Le mode de voix est choisi à l'étape 0 :
 
-## 1. Préparer l'enregistrement
+- **voix clonée** (par défaut) : [voicebox](https://github.com/jamiepine/voicebox) dit le script avec le profil de l'utilisateur → section 1, puis 3 ;
+- **manuel** (pas de voicebox, pas de profil, ou l'utilisateur enregistre lui-même) → section 2, puis 3 quand ses prises arrivent.
+
+## 1. Voix clonée (voicebox)
+
+```
+pub-video voice synth <vidéo> --profil <nom>          # une prise par réplique → audio/voix/prises/
+pub-video voice synth <vidéo> --profil <nom> --ligne 3 --seed 7   # refait une seule prise, avec une autre graine
+```
+
+- **Le profil** se crée une fois dans voicebox, par l'utilisateur, avec sa propre voix ou une voix qu'il a le droit d'utiliser.
+- **Le ton et le débit viennent de l'échantillon** : la voix clonée reprend la hauteur, l'énergie et la vitesse de l'enregistrement du profil, et aucun moteur de clonage de voicebox ne suit de consigne de ton. Garde ce débit ; `--tempo` (par exemple 1.05) accélère ou ralentit toutes les prises sans changer la hauteur, seulement si l'utilisateur le demande. Pour une autre voix, il change l'échantillon du profil.
+- **Tu n'entends pas les prises, tu les mesures, puis tu les relis** :
+  - `synth` compare la durée parlée de chaque prise à celle attendue pour son texte et marque `SILENCE`, `TROP LONGUE ?` ou `TROP COURTE ?` : refais chaque prise marquée avec `--ligne <n> --seed <nombre>` ;
+  - puis transcris chaque prise avec whisper.cpp (chemin donné par `pub-video doctor`) et compare-la à son texte : un mot avalé ou remplacé (« prompts » entendu « pompes ») se refait avec une autre graine. Un nom qui reste mal dit après deux graines s'écrit comme il se prononce dans `audio/voix/<vidéo>.txt` le temps de cette prise (« Djémini »), puis l'orthographe revient. Un mot que toutes les graines disent pareil reste, et va dans la liste des mots à écouter de la livraison.
+- **Licence** : `synth` refuse OmniVoice, sous licence non commerciale. Note le moteur et le profil dans `brief.md`.
+- **La livraison le dit** : la voix est de synthèse. L'utilisateur la signale comme contenu généré par IA là où la plateforme le demande.
+
+Puis mixe avec la commande qu'affiche `synth` (section 3).
+
+## 2. Mode manuel : préparer l'enregistrement
 
 ```
 pub-video voice guide <vidéo>
@@ -23,24 +43,7 @@ Donne à l'utilisateur, dans la livraison :
    - faire deux ou trois prises et garder la meilleure ; sourire en parlant, articuler les chiffres.
 3. Où déposer le ou les fichiers : `audio/voix/` du projet (ou le dossier de prises habituel de l'utilisateur).
 
-## Voix de synthèse (voicebox)
-
-Quand la demande le prévoit, la voix off se génère au lieu de s'enregistrer : [voicebox](https://github.com/jamiepine/voicebox) tourne sur la machine de l'utilisateur et dit le script avec un profil de voix clonée.
-
-```
-pub-video voice profils --profil <nom>                                  # code 0 : voicebox répond et le profil existe
-pub-video voice synth <vidéo> --profil <nom>                            # une prise par réplique → audio/voix/prises/
-```
-
-- **Le profil** se crée une fois dans voicebox, par l'utilisateur, avec sa propre voix ou une voix qu'il a le droit d'utiliser.
-- **Le ton vient de l'échantillon** : la voix clonée reprend la hauteur, l'énergie et le débit de l'enregistrement du profil, et aucun moteur de clonage de voicebox ne suit de consigne de ton. Pour une voix plus grave ou plus vive, l'utilisateur change l'échantillon du profil : un nouvel enregistrement dans le ton voulu, ou les meilleures prises générées mises bout à bout. `--tempo 1.05` accélère toutes les prises sans changer la hauteur.
-- **Tu n'entends pas les prises, tu les mesures** : `synth` compare la durée parlée de chaque prise à celle attendue pour son texte et marque `SILENCE`, `TROP LONGUE ?` ou `TROP COURTE ?`. Refais chaque prise marquée avec `--ligne <n> --seed <nombre>` jusqu'à ce qu'aucune ne le soit.
-- **Licence** : `synth` refuse OmniVoice, sous licence non commerciale. Note le moteur et le profil dans `brief.md`.
-- **La livraison le dit** : la voix est de synthèse. L'utilisateur la signale comme contenu généré par IA là où la plateforme le demande.
-
-Le mixage est ensuite celui d'une voix enregistrée : la commande qu'affiche `synth`, lue avec la section 2.
-
-## 2. Mixer la voix reçue
+## 3. Mixer
 
 ```
 pub-video voice mix <vidéo> <prise.m4a>                       # une prise de tout le script, pauses entre les répliques
@@ -63,7 +66,9 @@ Lis le tableau qu'elle affiche :
 - demander une prise par réplique ;
 - demander une nouvelle prise avec des pauses plus nettes.
 
-**Si une réplique déborde** : raccourcis son texte et demande de la redire, ou avance son départ dans le script (`scène+0` au lieu de `scène+0.5`), ou allonge la scène d'un temps si le storyboard le permet. Après un changement de durée de scène : `pub-video build <vidéo>` complet, pas seulement le son.
+**Si une réplique déborde** : raccourcis son texte et refais-la (voix clonée) ou demande de la redire, ou avance son départ dans le script (`scène+0` au lieu de `scène+0.5`), ou allonge la scène d'un temps si le storyboard le permet. Après un changement de durée de scène : `pub-video build <vidéo>` complet, pas seulement le son.
+
+**Cale l'image sur la voix** : quand une réplique dure plus ou moins que prévu, ajuste la durée de sa scène, puis place chaque animation qui illustre un mot (un chiffre, un nom, une coche) sur l'instant où ce mot est dit, lu dans la transcription de la prise. Puis `pub-video build <vidéo>` complet.
 
 **Réglages**
 
@@ -71,7 +76,7 @@ Lis le tableau qu'elle affiche :
 - La voix part trop tôt ou trop tard sur les scènes : `--lead 0.15` dans `voice mix` (retard en secondes après le début de la scène).
 - Revenir à la version sans voix : `pub-video build <vidéo> --skip-video --no-voice`.
 
-## 3. Vérifier
+## 4. Vérifier
 
 - Le tableau ne montre aucun **DÉBORDE**.
 - `build` affiche le niveau final autour de −14 LUFS.
@@ -80,4 +85,4 @@ Lis le tableau qu'elle affiche :
 
 ## Critère de fin
 
-`exports/<vidéo>-<durée>s_avec-voix.mp4` existe, aucune réplique ne déborde, et l'utilisateur sait quoi écouter.
+`exports/<vidéo>-<durée>s_avec-voix.mp4` existe, aucune réplique ne déborde, chaque prise de voix clonée a été relue par transcription, et l'utilisateur sait quoi écouter.

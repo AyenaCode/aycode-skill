@@ -1,12 +1,12 @@
 ---
 name: pub-video
-description: Fabrique une pub vidéo en motion design pour un produit, à partir de son URL de production ou de son code source. Étudie le produit, écrit le concept, le storyboard et la voix off, trouve une musique libre calée au temps près, pose les bruitages, rend et exporte le .mp4. À utiliser pour une pub, un spot, une vidéo promo ou de lancement, un Reel, un TikTok ou un Short d'un produit, avec ou sans vidéo de référence, et pour mixer la voix off enregistrée d'une pub déjà produite.
+description: Fabrique une pub vidéo en motion design pour un produit, à partir de son URL de production ou de son code source. Étudie le produit, écrit le concept, le storyboard et la voix off, la fait dire par la voix clonée de l'utilisateur, trouve une musique libre calée au temps près, pose les bruitages, rend et exporte le .mp4. À utiliser pour une pub, un spot, une vidéo promo ou de lancement, un Reel, un TikTok ou un Short d'un produit, avec ou sans vidéo de référence, et pour mixer la voix off enregistrée d'une pub déjà produite.
 argument-hint: "[url | dépôt | dossier du produit] [cible, durée, format, références]"
 ---
 
 # Pub vidéo en motion design
 
-Tu es le réalisateur, le motion designer et le monteur son d'une pub. Tu pars d'un produit (son URL, son code, ou les deux) et tu livres une vidéo prête à publier, sa voix off écrite, et de quoi l'enregistrer. La barre : un spot qu'un studio signerait, pas une suite de textes qui apparaissent.
+Tu es le réalisateur, le motion designer et le monteur son d'une pub. Tu pars d'un produit (son URL, son code, ou les deux) et tu livres une vidéo prête à publier, dite par la voix clonée de l'utilisateur ; en mode manuel, sa voix off écrite et de quoi l'enregistrer. La barre : un spot qu'un studio signerait, pas une suite de textes qui apparaissent.
 
 Tout passe par la commande `pub-video` (rendu, son, musique, contrôles). Chaque sous-commande a son `--help`.
 
@@ -31,7 +31,12 @@ Chaque étape finit sur un critère vérifiable. Passe à la suivante quand il e
 
 `bash ${CLAUDE_SKILL_DIR}/install.sh` (sans sudo, rapide une fois tout installé). Il pointe la commande `pub-video` sur cette version du skill, même après une mise à jour, puis lance `pub-video doctor`. Un outil système absent (FFmpeg, Node) se demande à l'utilisateur avec la commande affichée.
 
-**Fini quand** `pub-video doctor` écrit « Tout le nécessaire est installé ».
+Puis le mode de voix : `pub-video voice profils`.
+
+- **Voix clonée**, le mode par défaut : la commande sort avec le code 0 et liste au moins un profil. Le profil est celui que la demande nomme, sinon le seul de la liste ; avec plusieurs profils et aucun nommé, demande lequel.
+- **Manuel** : code 1 (voicebox ne répond pas), aucun profil, ou l'utilisateur veut enregistrer lui-même. Tu écris la voix off et il l'enregistre, guidé par une vidéo guide.
+
+**Fini quand** `pub-video doctor` écrit « Tout le nécessaire est installé » et que tu connais le mode de voix (avec le profil, en mode voix clonée) ; il va dans la section « Demande » de `brief.md` à l'étape 1.
 
 ### 1. Cadrer
 
@@ -44,7 +49,7 @@ Lis la demande : `$ARGUMENTS` et la conversation. Ce qui n'est pas dit se décid
 | Durée | 30 s environ : un nombre entier de mesures de la musique |
 | Langue | celle du produit |
 | Plateforme | publication organique (zone sûre `universal`) ; pub payante → `safe: 'ads'` |
-| Voix off | écrite par toi, enregistrée ensuite par l'utilisateur ; générée avec sa voix clonée (voicebox) s'il le demande |
+| Voix off | écrite par toi, dite par sa voix clonée (voicebox) au débit de l'échantillon ; en mode manuel, enregistrée par l'utilisateur |
 
 Pose une question seulement si le produit est inaccessible, si deux produits sont possibles, ou si deux consignes se contredisent. Sinon, annonce tes choix en une phrase et avance.
 
@@ -92,32 +97,36 @@ Lis [`references/controle.md`](references/controle.md). Les contrôles automatiq
 
 ```
 pub-video build <vidéo>          # rendu final avec flou de mouvement, son masterisé → exports/
-pub-video voice guide <vidéo>    # sous-titres .srt et vidéo guide pour enregistrer la voix
 pub-video stills <vidéo> <t> --scale 1 --out exports/<vidéo>_couverture.png   # couverture : la seconde la plus parlante
+pub-video voice guide <vidéo>    # mode manuel : sous-titres .srt et vidéo guide pour enregistrer la voix
 ```
+
+Si le système arrête le rendu faute de mémoire, relance-le avec moins de navigateurs (`--workers 3`, puis 2).
 
 **Fini quand** `build` affiche la taille, le nombre d'images et le niveau sonore attendus sans erreur, et que tu as regardé trois images extraites du fichier exporté (début, révélation, fin).
 
-### 9. Livrer
+### 9. Poser la voix
 
-Écris `README.md` dans le projet : sources des captures et date, musique et licence, polices, commandes pour refaire la vidéo. Puis réponds à l'utilisateur, dans sa langue, sans jargon :
+En mode voix clonée, lis [`references/voix.md`](references/voix.md) : chaque réplique est dite par le profil et relue, puis la voix est mixée sous la pub et les animations calées sur les mots dits.
 
-1. Le ou les fichiers livrés (chemins complets) : vidéo, guide de voix off, sous-titres, couverture.
+En mode manuel, la voix arrive après la livraison : coche la case avec « mode manuel : à l'arrivée des prises ». Quand l'utilisateur fournit sa ou ses prises, mixe-les avec la section « Mixer » de `voix.md`, puis relivre la vidéo avec voix.
+
+**Fini quand** `exports/<vidéo>-<durée>s_avec-voix.mp4` existe et que le tableau de `voice mix` ne montre aucune réplique qui déborde (mode voix clonée), ou que la case porte la mention du mode manuel.
+
+### 10. Livrer
+
+Écris `README.md` dans le projet : sources des captures et date, musique et licence, polices, voix (profil et moteur, ou prises de l'utilisateur), commandes pour refaire la vidéo. Puis réponds à l'utilisateur, dans sa langue, sans jargon :
+
+1. Le ou les fichiers livrés (chemins complets) : la vidéo avec voix et sa couverture ; en mode manuel, la vidéo sans voix, le guide de voix off, les sous-titres et la couverture.
 2. Ce que montre la pub, scène par scène, en une ligne chacune.
 3. Ce qui est réel et ce qui est reconstruit.
 4. La musique : titre, auteur, licence, et ce qu'elle n'autorise pas (télé, radio).
-5. Ce que lui seul peut juger : le son à l'oreille, les noms de tiers montrés, la licence à relire.
-6. Le texte de la voix off, et comment l'enregistrer (voir [`references/voix.md`](references/voix.md)).
+5. Ce que lui seul peut juger : le son à l'oreille, la voix, les noms de tiers montrés, la licence à relire.
+6. En mode voix clonée : la voix est de synthèse, à signaler comme contenu généré par IA là où la plateforme le demande, et les mots à écouter (ceux que la relecture a trouvés douteux). En mode manuel : le texte de la voix off et comment l'enregistrer (voir [`references/voix.md`](references/voix.md)).
 
 Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie-y les fichiers livrés.
 
-**Fini quand** l'utilisateur a les chemins, les réserves et le texte à enregistrer.
-
-### 10. Voix enregistrée ou générée
-
-Quand l'utilisateur fournit sa ou ses prises, ou que la demande prévoit une voix de synthèse : lis [`references/voix.md`](references/voix.md).
-
-**Fini quand** `exports/<vidéo>-<durée>s_avec-voix.mp4` existe et que le tableau de `voice mix` ne montre aucune réplique qui déborde.
+**Fini quand** l'utilisateur a les chemins et les réserves, et, en mode manuel, le texte à enregistrer.
 
 ## Ce qui sépare une pub pro d'une pub générée
 

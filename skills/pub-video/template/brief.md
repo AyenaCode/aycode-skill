@@ -11,9 +11,9 @@ Ce fichier est la mémoire de la production : il se remplit au fil des étapes e
 - [ ] 5. Musique choisie, calée, licence notée
 - [ ] 6. Scènes construites ; `pub-video check` sans erreur
 - [ ] 7. Revue visuelle : planches des scènes et des transitions regardées, défauts corrigés (deux passes)
-- [ ] 8. Rendu final, export vérifié, guide de voix off produit
-- [ ] 9. Livraison écrite à l'utilisateur ; `README.md` du projet à jour
-- [ ] 10. Voix enregistrée mixée (quand l'utilisateur la fournit)
+- [ ] 8. Rendu final, export vérifié (mode manuel : guide de voix off produit)
+- [ ] 9. Voix posée : voix clonée dite, relue et mixée (mode manuel : « à l'arrivée des prises »)
+- [ ] 10. Livraison écrite à l'utilisateur ; `README.md` du projet à jour
 
 ## Demande
 

@@ -38,6 +38,6 @@ Les images se dessinent en typographie, formes, icônes et schémas faits en CSS
 
 ## 5. La voix et les sous-titres
 
-- `pub-video` écrit le texte de la voix ; l'utilisateur l'enregistre, puis `pub-video voice mix` l'ajoute à la vidéo.
+- `pub-video` écrit le texte de la voix et le fait dire par la voix clonée de l'utilisateur (en mode manuel, l'utilisateur l'enregistre), puis `pub-video voice mix` l'ajoute à la vidéo.
 - Les sous-titres de la voix seront incrustés au centre-bas de l'image (`sous_titres.hauteur` 0,68, soit y ≈ 1 300 sur 1 920). Laisse donc libre de texte la bande y 1 180 à 1 440 dans les scènes, ou note dans `brief.md` la hauteur où les scènes laissent de la place.
 - L'export avec voix devient la source de `video-verticale new` (étape 4 du skill), avec `--voix render/<vidéo>_voice.wav` (la voix seule, écrite par le mixage de `pub-video`). Il a déjà sa musique et ses bruitages : dans `verticale.json`, laisse `musique` à `null` et `bruitages` vide.

@@ -76,9 +76,9 @@ Lis [`references/sujet.md`](references/sujet.md).
 
 **Fini quand** `pub-video build` affiche OK. La suite dépend de la voix :
 
-- **Sans voix** : le texte à l'écran porte le message et il n'y a rien à sous-titrer. Livre la vidéo comme le dit l'étape 9 du `SKILL.md` de `pub-video` ; le travail s'arrête là.
-- **Avec voix** : livre l'aperçu, le texte et le guide de voix off (étape 9 de `pub-video`), puis attends la prise de l'utilisateur. Quand elle arrive, fais l'étape 10 de `pub-video` (`voice mix`), puis l'étape 4 ci-dessous.
-- **Avec une voix de synthèse** (la demande le prévoit) : génère-la au lieu d'attendre, avec l'étape 10 de `pub-video` (`voice synth`, puis `voice mix`), puis l'étape 4 ci-dessous.
+- **Sans voix** : le texte à l'écran porte le message et il n'y a rien à sous-titrer. Livre la vidéo comme le dit l'étape 10 du `SKILL.md` de `pub-video` ; le travail s'arrête là.
+- **Voix clonée** (le mode par défaut de `pub-video`, quand voicebox répond avec un profil) : fais l'étape 9 de `pub-video` (`voice synth`, relecture, `voice mix`), puis l'étape 4 ci-dessous.
+- **Voix manuelle** (pas de voicebox, pas de profil, ou l'utilisateur enregistre lui-même) : livre l'aperçu, le texte et le guide de voix off (étape 10 de `pub-video`), puis attends la prise de l'utilisateur. Quand elle arrive, mixe-la (étape 9 de `pub-video`, `voice mix`), puis l'étape 4 ci-dessous.
 
 Dans la branche rush, coche la case 3 avec « sans objet ».
 
