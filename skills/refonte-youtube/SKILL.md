@@ -138,7 +138,7 @@ Envoie-lui le chemin de l'aperçu (`exports/<nom>_apercu.mp4`) et sa durée, et 
    - la voix clonée se déclare comme contenu modifié ou synthétique ;
    - la miniature reste à faire.
 
-Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie-y les fichiers livrés.
+Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie les fichiers livrés dans `exports/<vidéo>/`, un sous-dossier par vidéo : `<vidéo>` est le nom du dossier du projet sans son suffixe (`-montage`, `-motion`, `-vertical`, `-pub`, `-refonte`, `-youtube`), pour que les fichiers d'une même vidéo se retrouvent ensemble, quel que soit le skill qui les a faits.
 
 **Fini quand** l'utilisateur a les chemins, le bilan et les réserves.
 

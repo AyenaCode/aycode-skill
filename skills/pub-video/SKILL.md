@@ -124,7 +124,7 @@ En mode manuel, la voix arrive après la livraison : coche la case avec « mode 
 5. Ce que lui seul peut juger : le son à l'oreille, la voix, les noms de tiers montrés, la licence à relire.
 6. En mode voix clonée : la voix est de synthèse, à signaler comme contenu généré par IA là où la plateforme le demande, et les mots à écouter (ceux que la relecture a trouvés douteux). En mode manuel : le texte de la voix off et comment l'enregistrer (voir [`references/voix.md`](references/voix.md)).
 
-Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie-y les fichiers livrés.
+Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie les fichiers livrés dans `exports/<vidéo>/`, un sous-dossier par vidéo : `<vidéo>` est le nom du dossier du projet sans son suffixe (`-montage`, `-motion`, `-vertical`, `-pub`, `-refonte`, `-youtube`), pour que les fichiers d'une même vidéo se retrouvent ensemble, quel que soit le skill qui les a faits.
 
 **Fini quand** l'utilisateur a les chemins et les réserves, et, en mode manuel, le texte à enregistrer.
 

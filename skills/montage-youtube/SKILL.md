@@ -100,7 +100,7 @@ Lis [`references/sous-titres.md`](references/sous-titres.md).
 3. Ce que lui seul peut juger : les coupes à écouter, l'orthographe des noms.
 4. Les sous-titres se téléversent dans YouTube Studio, rubrique Sous-titres, avec le fichier `.srt`.
 
-Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie-y les fichiers livrés.
+Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie les fichiers livrés dans `exports/<vidéo>/`, un sous-dossier par vidéo : `<vidéo>` est le nom du dossier du projet sans son suffixe (`-montage`, `-motion`, `-vertical`, `-pub`, `-refonte`, `-youtube`), pour que les fichiers d'une même vidéo se retrouvent ensemble, quel que soit le skill qui les a faits.
 
 **Fini quand** l'utilisateur a les chemins, le bilan et les réserves.
 

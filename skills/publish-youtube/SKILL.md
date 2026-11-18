@@ -119,6 +119,6 @@ Extrais une image de départ pour la miniature, à la seconde la plus parlante :
    - téléverser le `.srt` dans Sous-titres ;
    - déclarer la voix clonée comme contenu modifié ou synthétique.
 
-Si un dossier `exports/` existe au-dessus des projets, copie-y la vidéo et ses fichiers.
+Si un dossier `exports/` existe au-dessus des projets, copie la vidéo et ses fichiers dans `exports/<vidéo>/`, un sous-dossier par vidéo : `<vidéo>` est le nom du dossier du projet sans son suffixe (`-montage`, `-motion`, `-vertical`, `-pub`, `-refonte`, `-youtube`), pour que les fichiers d'une même vidéo se retrouvent ensemble, quel que soit le skill qui les a faits.
 
 **Fini quand** l'utilisateur a la vidéo, ses textes de publication et les réserves, et que le journal la marque livrée.

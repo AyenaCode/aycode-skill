@@ -127,7 +127,7 @@ video-verticale image <secondes>   # couverture : l'image qui dit le plus, souve
 4. Ce que lui seul peut juger : le son à l'oreille, l'orthographe des noms, la force de l'accroche.
 5. La publication : le même fichier sert aux trois plateformes. Les sous-titres automatiques de la plateforme restent coupés, sinon ils se superposent aux sous-titres incrustés. La couverture se téléverse là où la plateforme le permet ; ailleurs, on choisit l'image à la même seconde.
 
-Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie-y les fichiers livrés.
+Si un dossier `exports/` existe au-dessus du projet (atelier vidéo de l'utilisateur), copie les fichiers livrés dans `exports/<vidéo>/`, un sous-dossier par vidéo : `<vidéo>` est le nom du dossier du projet sans son suffixe (`-montage`, `-motion`, `-vertical`, `-pub`, `-refonte`, `-youtube`), pour que les fichiers d'une même vidéo se retrouvent ensemble, quel que soit le skill qui les a faits.
 
 **Fini quand** l'utilisateur a les chemins, le bilan et les réserves.
 
