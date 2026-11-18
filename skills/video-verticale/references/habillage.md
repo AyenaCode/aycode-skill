@@ -1,6 +1,6 @@
 # Habillage : décider verticale.json
 
-But : décider chaque champ de `verticale.json`, puis juger le résultat sur les planches. Les temps des mots et des coupes sont dans `work/mots.json` (en secondes, sur la vidéo finale).
+But : décider chaque champ de `verticale.json`, puis juger le résultat sur les planches. Les temps des mots et des coupes sont dans `work/mots.json` (en secondes, sur la vidéo finale). Pour une source fichier, ils sont déjà avancés du retard que la transcription met sur la voix, mesuré à chaque reprise après un silence (champ `avance`, en général 0,13 à 0,24 s) : ne les décale pas une seconde fois à la main.
 
 ## Sous-titres (`sous_titres`)
 
