@@ -18,7 +18,8 @@ function picture(it) {
 	if (v.kind === 'carton') return `carton « ${String(it.carton ?? '').slice(0, 24)} »`;
 	const how = !it.fit ? '' : it.fit.k > 1.01 ? ` ×${fmt(it.fit.k, 2)}` : it.fit.k < 0.99 ? ` ralenti ×${fmt(it.fit.k, 2)}` : '';
 	const hold = it.fit?.hold > 0.05 ? ` +tenue ${fmt(it.fit.hold)} s` : '';
-	return `${it.pieces.map((p) => `${tc(p.ss)}→${tc(p.ss + p.len)}`).join(' + ')}${how}${hold}${it.pieces.some((p) => p.zoom && !p.zoom.auto) ? ' zoom' : ''}`;
+	const from = v.file ? `${v.file.split('/').pop()} ` : '';
+	return `${from}${it.pieces.map((p) => `${tc(p.ss)}→${tc(p.ss + p.len)}`).join(' + ')}${how}${hold}${it.pieces.some((p) => p.zoom && !p.zoom.auto) ? ' zoom' : ''}`;
 }
 
 export default async function (_cmd, a) {
@@ -44,10 +45,12 @@ export default async function (_cmd, a) {
 	const missing = voiced.filter((it) => it.voice.estimated).length;
 	const words = voiced.reduce((s, it) => s + wordsOf(it.line.text).length, 0);
 	const speech = voiced.reduce((s, it) => s + it.voice.dur, 0);
-	const reused = tl.items.flatMap((it) => it.pieces).filter((p) => p.kind === 'source').reduce((s, p) => s + p.len, 0);
+	const reused = tl.items.flatMap((it) => it.pieces).filter((p) => p.kind === 'source' && p.file === cfg.source?.video).reduce((s, p) => s + p.len, 0);
+	const clips = tl.items.flatMap((it) => it.pieces).filter((p) => p.kind === 'source' && p.file !== cfg.source?.video).reduce((s, p) => s + p.len, 0);
+	const images = tl.items.filter((it) => it.line.visual.kind === 'image').length;
 	console.log(`\nDurée : ${dur(tl.duration)}${missing ? ` (estimée : ${missing} réplique(s) sans prise de voix)` : ''} · ${tl.items.length} répliques · ${tl.chapters.length} chapitre(s)`);
 	console.log(`Voix : ${words} mots, ${speech ? Math.round((words / speech) * 60) : 0} mots par minute parlée, ${Math.round((speech / Math.max(1, tl.duration)) * 100)} % du temps`);
-	console.log(`Ancienne vidéo reprise : ${dur(reused)} sur ${dur(cfg.source.duree)} · séquences animées : ${tl.items.filter((it) => it.line.visual.kind === 'motion').length} · cartons : ${tl.items.filter((it) => it.line.visual.kind === 'carton').length} · mots forts : ${tl.items.reduce((s, it) => s + it.keywords.length, 0)}`);
+	console.log(`${cfg.source ? `Ancienne vidéo reprise : ${dur(reused)} sur ${dur(cfg.source.duree)} · ` : ''}clips : ${dur(clips)} · images : ${images} · séquences animées : ${tl.items.filter((it) => it.line.visual.kind === 'motion').length} · cartons : ${tl.items.filter((it) => it.line.visual.kind === 'carton').length} · mots forts : ${tl.items.reduce((s, it) => s + it.keywords.length, 0)}`);
 	if (cfg.duree_visee) {
 		const gap = tl.duration / cfg.duree_visee - 1;
 		console.log(`Durée visée : ${dur(cfg.duree_visee)} → ${gap >= 0 ? '+' : ''}${Math.round(gap * 100)} %${Math.abs(gap) > 0.1 ? ' (hors des 10 %)' : ''}`);

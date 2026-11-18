@@ -3,16 +3,18 @@
 //   # Titre du chapitre                       starts a chapter (YouTube chapters, a title card, a whoosh)
 //   [1:12-1:20] Texte de la réplique.         a passage of the old video under the line
 //   [1:12-1:15 2:03-2:08 zoom] Texte…         several passages in a row, slow push-in
-//   [=] Texte…                                the old video goes on where the previous line left it
+//   [=] Texte…                                the video goes on where the previous line left it
 //   [3:40-4:10 entier] Texte…                 the whole passage, sped up or slowed down to fit the line
+//   [video clips/demo.mp4 0:10-0:25] Texte…   a passage of another video of the user (a screen recording…)
 //   [motion intro] Texte…                     an animated insert, motion/intro.mp4 (made with pub-video)
 //   [image images/schema.png] Texte…          a still image, slow push-in
+//   [image images/page_full.png defile] …     a tall capture scrolled from top to bottom
 //   [carton "3 erreurs"] Texte…               a plain background with a big text
 //   [carton "Fin" 2s]                         a line without voice needs a duration (except a passage or a motion)
 //   > note                                    ignored, like empty lines
 //
 // Options inside the brackets: entier · zoom · zoom=1.3 · zoom=1.3@0.7,0.2 (factor, then the point to zoom on,
-// as fractions of the width and height) · 2.5s (duration) · pause=0.8 (silence after the line) ·
+// as fractions of the width and height) · defile (image) · 2.5s (duration) · pause=0.8 (silence after the line) ·
 // son=ding or son=ding+0.4 (sound effect, seconds after the line starts) · fond=#112233 (carton background).
 // In the text, *mot fort* puts the words on screen at the moment they are said.
 import { existsSync, readFileSync } from 'node:fs';
@@ -39,7 +41,7 @@ function tokens(s) {
 }
 
 function visual(spec, err) {
-	const v = { kind: 'source', ranges: [], cont: false, whole: false, zoom: null, file: null, label: null, dur: null, pause: null, sons: [], fond: null };
+	const v = { kind: 'source', ranges: [], cont: false, whole: false, zoom: null, scroll: false, file: null, label: null, dur: null, pause: null, sons: [], fond: null };
 	const toks = tokens(spec);
 	if (!toks.length) return err('les crochets sont vides : mets un passage (1:12-1:20), « = », motion, image ou carton.');
 	const first = toks[0].word;
@@ -49,6 +51,11 @@ function visual(spec, err) {
 		const name = toks[1]?.word ?? toks[1]?.quoted;
 		if (!name) return err(first === 'motion' ? 'donne le nom de la séquence : [motion intro] pour motion/intro.mp4.' : 'donne le fichier : [image images/schema.png].');
 		v.file = first === 'motion' && !/[/.]/.test(name) ? join('motion', `${name}.mp4`) : name;
+		rest = toks.slice(2);
+	} else if (first === 'video') {
+		// A passage of another video: kind source, from that file instead of the old video.
+		v.file = toks[1]?.word ?? toks[1]?.quoted;
+		if (!v.file) return err('donne le fichier : [video clips/demo.mp4 0:10-0:25].');
 		rest = toks.slice(2);
 	} else if (first === 'carton') {
 		v.kind = 'carton';
@@ -69,6 +76,7 @@ function visual(spec, err) {
 			if (b <= a) return err(`passage « ${w} » : la fin vient avant le début.`);
 			v.ranges.push([a, b]);
 		} else if (w === 'entier') v.whole = true;
+		else if (w === 'defile') v.scroll = true;
 		else if ((m = ZOOM.exec(w))) v.zoom = { k: m[1] ? Number(m[1]) : 1.15, x: m[2] ? Number(m[2]) : 0.5, y: m[3] ? Number(m[3]) : 0.5 };
 		else if ((m = DUR.exec(w))) v.dur = n(m[1]);
 		else if ((m = PAUSE.exec(w))) v.pause = n(m[1]);
@@ -80,8 +88,9 @@ function visual(spec, err) {
 		if (!v.ranges.length && !v.cont) return err('aucun passage : mets 1:12-1:20, ou « = » pour continuer l’ancienne vidéo.');
 		if (v.ranges.length && v.cont) return err('« = » et un passage ensemble : garde l’un ou l’autre.');
 	} else if (v.ranges.length || v.cont || v.whole) return err(`un passage, « = » ou « entier » ne vont pas avec ${v.kind}.`);
-	if (v.zoom && v.zoom.k < 1) return err('le zoom va de 1 (rien) à 3.');
-	if (v.zoom && v.zoom.k > 3) return err('le zoom va de 1 (rien) à 3.');
+	if (v.scroll && v.kind !== 'image') return err('« defile » ne va qu’avec une image : [image captures/page_full.png defile].');
+	if (v.scroll && v.zoom) return err('« defile » et « zoom » ensemble : garde l’un ou l’autre.');
+	if (v.zoom && (v.zoom.k < 1 || v.zoom.k > 3)) return err('le zoom va de 1 (rien) à 3.');
 	return v;
 }
 

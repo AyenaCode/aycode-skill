@@ -39,6 +39,10 @@ async function renderPiece(p, o, out) {
 		input = ['-ss', p.ss.toFixed(3), '-t', (p.len + 0.5).toFixed(3), '-i', p.file];
 		// Hold the last image as long as needed: the frame count cuts the clip exactly.
 		chain = [`setpts=(PTS-STARTPTS)/${p.k.toFixed(5)}`, `fps=${F}`, fit, `tpad=stop_mode=clone:stop_duration=${(p.frames / F + 1).toFixed(2)}`, ...zoom];
+	} else if (p.kind === 'image' && p.scroll) {
+		// A tall capture at the output width, scrolled from top to bottom, eased.
+		input = ['-loop', '1', '-framerate', String(F), '-i', p.file];
+		chain = [`scale=${w}:-2`, `crop=${w}:${h}:0:'(ih-oh)*(1-cos(PI*min(n/${p.frames},1)))/2'`, 'setsar=1'];
 	} else if (p.kind === 'image') {
 		input = ['-loop', '1', '-framerate', String(F), '-i', p.file];
 		chain = [fit, ...zoom];
@@ -117,7 +121,7 @@ export default async function (cmd, a) {
 	const pieces = tl.items.flatMap((it) => it.pieces);
 	const files = pieces.map((p) => {
 		const mtime = p.file && existsSync(p.file) ? statSync(p.file).mtimeMs : null;
-		const key = hash({ v: CLIP_VERSION, kind: p.kind, file: p.file ?? null, mtime, ss: p.ss ?? null, len: p.len ?? null, k: p.k ?? null, frames: p.frames, zoom: p.zoom ?? null, fond: p.fond ?? o.fond, w: o.w, h: o.h, F, final });
+		const key = hash({ v: CLIP_VERSION, kind: p.kind, file: p.file ?? null, mtime, ss: p.ss ?? null, len: p.len ?? null, k: p.k ?? null, frames: p.frames, zoom: p.zoom ?? null, scroll: !!p.scroll, fond: p.fond ?? o.fond, w: o.w, h: o.h, F, final });
 		return join(clips, `${key}.mp4`);
 	});
 	const todo = pieces.map((p, i) => ({ p, f: files[i] })).filter(({ f }) => !existsSync(f));

@@ -10,8 +10,10 @@ import { dur, ffmpeg, num, parseTc, probe, run, saveConfig, SKILL, tc, which, wr
 
 export const booleans = ['help'];
 const HELP = `refonte-youtube new <dossier> <vidéo | lien> [--lang fr] [--duree 10:00] [--pas 5] [--cookies cookies.txt]
-    Crée le projet de refonte. Un lien est téléchargé avec yt-dlp (1080p au plus) dans source/ ; un fichier est
-    lu sur place, jamais modifié. Puis :
+refonte-youtube new <dossier> --sujet "<titre>" [--lang fr] [--duree 10:00]
+    Crée le projet. Avec --sujet : une vidéo nouvelle, sans ancienne vidéo ; ses images viennent de captures,
+    de clips et de séquences animées (voir references/images.md). Sinon, l'ancienne vidéo : un lien est téléchargé
+    avec yt-dlp (1080p au plus) dans source/ ; un fichier est lu sur place, jamais modifié. Puis :
     - transcrit l'ancienne vidéo (whisper.cpp) → source.md, phrase par phrase avec ses temps ;
     - repère les changements de plan → marqués dans source.md ;
     - dessine les planches (une image toutes les --pas secondes) → work/planches/planche-01.png… ;
@@ -34,11 +36,13 @@ function sentences(words, end) {
 }
 
 export default async function (_cmd, a) {
-	if (a.help || a._.length < 2) return console.log(HELP);
+	const sujet = a.sujet && a.sujet !== true ? String(a.sujet) : null;
+	if (a.help || !a._[0] || (!a._[1] && !sujet)) return console.log(HELP);
 	const root = resolve(a._[0]);
 	const given = a._[1];
-	if (existsSync(join(root, 'refonte.json'))) throw new Error(`${root} contient déjà un projet de refonte : lance les commandes suivantes depuis ce dossier.`);
-	for (const d of ['source', 'work/planches', 'voix', 'motion', 'images', 'fonts', 'audio/music', 'audio/sfx', 'exports']) await mkdir(join(root, d), { recursive: true });
+	if (existsSync(join(root, 'refonte.json'))) throw new Error(`${root} contient déjà un projet : lance les commandes suivantes depuis ce dossier.`);
+	for (const d of ['source', 'work/planches', 'voix', 'motion', 'images', 'clips', 'fonts', 'audio/music', 'audio/sfx', 'exports']) await mkdir(join(root, d), { recursive: true });
+	if (!given) return fresh(root, sujet, a);
 
 	// 1. The old video.
 	let video;
@@ -59,18 +63,7 @@ export default async function (_cmd, a) {
 
 	const lang = String(a.lang && a.lang !== true ? a.lang : 'auto');
 	const nom = root.split('/').pop().replace(/-refonte$/, '').toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'video';
-	const cfg = {
-		nom,
-		langue: lang,
-		duree_visee: a.duree ? parseTc(a.duree) : Math.round(src.duration),
-		source: { video, url: video === resolve(given) ? null : given, duree: src.duration, largeur: src.width, hauteur: src.height, fps: src.fps },
-		sortie: { largeur: 1920, hauteur: 1080, fps: 30 },
-		voix: { profil: null, moteur: null, tempo: 1, avance: 0.08, pause: 0.35, pause_chapitre: 0.9 },
-		musique: [],
-		mixage: { lufs: -14, musique_sous_voix: 12, baisse: 10, fondu_musique: 3 },
-		style: { police: null, fichier_police: null, licence_police: null, accent: '#FFD400', texte: '#FFFFFF', texte_sur_accent: '#111111', fond: '#0E0E10', majuscules: true, position_mots: 'bas', etiquette_chapitre: 'Chapitre' },
-		bruitages: { mots_forts: 'pop', chapitres: 'whoosh', cartons: 'hit', sequences: 0.45, volume: 1 }
-	};
+	const cfg = defaults(nom, lang, a.duree ? parseTc(a.duree) : Math.round(src.duration), { video, url: video === resolve(given) ? null : given, duree: src.duration, largeur: src.width, hauteur: src.height, fps: src.fps });
 	if (!Number.isFinite(cfg.duree_visee)) throw new Error('--duree illisible : écris 10:00 ou 600.');
 	saveConfig(root, cfg);
 
@@ -145,4 +138,40 @@ export default async function (_cmd, a) {
 	console.log(`  planches : ${sheets.map((f) => relative(root, join(root, 'work', 'planches', f))).join(', ')}`);
 	console.log(`  durée visée : ${dur(cfg.duree_visee)} · langue : ${cfg.langue}`);
 	console.log('Suite : lis source.md et chaque planche, puis écris script.md. Les commandes se lancent depuis ce dossier.');
+}
+
+// A new video on a subject: no old video to read. Its pictures come from captures, clips and inserts.
+async function fresh(root, sujet, a) {
+	const nom = root.split('/').pop().replace(/-(refonte|youtube)$/, '').toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'video';
+	const cfg = defaults(nom, String(a.lang && a.lang !== true ? a.lang : 'fr'), a.duree ? parseTc(a.duree) : 600, null);
+	cfg.sujet = sujet;
+	if (!Number.isFinite(cfg.duree_visee)) throw new Error('--duree illisible : écris 10:00 ou 600.');
+	saveConfig(root, cfg);
+	const fill = (s) => s.replaceAll('__NOM__', nom).replaceAll('__SOURCE__', `aucune : vidéo nouvelle sur « ${sujet} »`).replaceAll('__DUREE__', '—').replaceAll('__VISEE__', dur(cfg.duree_visee));
+	await writeFile(join(root, 'brief.md'), fill(await readFile(join(SKILL, 'template', 'brief.md'), 'utf8')));
+	await writeFile(join(root, 'script.md'), fill(await readFile(join(SKILL, 'template', 'script.md'), 'utf8')));
+	try {
+		const f = await setFont(root, cfg, 'Montserrat', 800);
+		console.log(`Police : ${f.name} → ${f.file}`);
+	} catch (e) {
+		console.log(`Police non téléchargée (${e.message}). Plus tard : « refonte-youtube police "Montserrat" ».`);
+	}
+	console.log(`Projet créé : ${root}\n  vidéo nouvelle sur « ${sujet} » · durée visée ${dur(cfg.duree_visee)} · langue ${cfg.langue}`);
+	console.log('Suite : rassemble les images (captures dans images/, clips dans clips/), puis écris script.md. Les commandes se lancent depuis ce dossier.');
+}
+
+// refonte.json of a new project. source: the old video, or null for a new video.
+function defaults(nom, langue, duree, source) {
+	return {
+		nom,
+		langue,
+		duree_visee: duree,
+		source,
+		sortie: { largeur: 1920, hauteur: 1080, fps: 30 },
+		voix: { profil: null, moteur: null, tempo: 1, avance: 0.08, pause: 0.35, pause_chapitre: 0.9 },
+		musique: [],
+		mixage: { lufs: -14, musique_sous_voix: 12, baisse: 10, fondu_musique: 3 },
+		style: { police: null, fichier_police: null, licence_police: null, accent: '#FFD400', texte: '#FFFFFF', texte_sur_accent: '#111111', fond: '#0E0E10', majuscules: true, position_mots: 'bas', etiquette_chapitre: 'Chapitre' },
+		bruitages: { mots_forts: 'pop', chapitres: 'whoosh', cartons: 'hit', sequences: 0.45, volume: 1 }
+	};
 }

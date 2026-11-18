@@ -15,10 +15,12 @@ Le spectateur ne sait pas que les images viennent d'une ancienne vidéo. Chacune
 | `[1:12-1:20]` | le cas courant : le passage où l'ancienne vidéo montre ce dont parle la réplique |
 | `[=]` | la réplique suivante montre la suite de la même action |
 | `[a-b c-d]` | plusieurs moments à la suite sous une même réplique (avant, puis après) |
+| `[video clips/x.mp4 a-b]` | un passage d'une autre vidéo de l'utilisateur (une démonstration, un plan de coupe) |
 | `[a-b entier]` | une action longue à montrer en entier, accélérée (jusqu'à ×4) : un chargement, une saisie, un défilement |
 | `zoom`, `zoom=1.4@0.7,0.3` | une capture d'écran où le détail est petit : zoom progressif vers ce point (fractions de la largeur et de la hauteur) |
 | `[motion nom]` | ce que l'ancienne vidéo ne montre pas bien : l'accroche, un chiffre, un schéma, une comparaison, la fin (voir [`motion.md`](motion.md)) |
 | `[image fichier]` | une capture, un schéma ou un logo fourni par l'utilisateur ; il reçoit un zoom lent |
+| `[image fichier defile]` | une capture de page entière, parcourue de haut en bas |
 | `[carton "texte"]` | une transition, une question, un chiffre seul, sur un fond uni ; 1 à 4 mots |
 
 ## 3. Règles

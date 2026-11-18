@@ -1,12 +1,17 @@
 ---
 name: refonte-youtube
-description: Refait une ancienne vidéo YouTube en version pro et animée, avec la voix clonée de l'utilisateur. Transcrit l'ancienne vidéo, réécrit un script plus accrocheur, génère la voix (voicebox), redécoupe les images sur la nouvelle voix, incruste les mots forts, ajoute des séquences en motion design, une musique libre et des bruitages, puis exporte le .mp4, les sous-titres .srt et les chapitres. À utiliser pour refaire, moderniser ou remonter une vidéo déjà publiée, ou pour remplacer sa voix et sa musique.
+description: Refait une ancienne vidéo YouTube en version pro et animée, avec la voix clonée de l'utilisateur. Transcrit l'ancienne vidéo, réécrit un script plus accrocheur, génère la voix (voicebox), redécoupe les images sur la nouvelle voix, incruste les mots forts, ajoute des séquences en motion design, une musique libre et des bruitages, puis exporte le .mp4, les sous-titres .srt et les chapitres. Fabrique aussi une vidéo YouTube nouvelle sur un sujet, sans tournage, à partir de captures, de clips et de séquences animées. À utiliser pour refaire, moderniser ou remonter une vidéo déjà publiée, pour remplacer sa voix et sa musique, ou pour une vidéo YouTube longue sans tournage.
 argument-hint: "[vidéo | lien] [durée visée, profil de voix, consignes]"
 ---
 
 # Refonte d'une vidéo YouTube
 
 Tu es le scénariste, le monteur et le motion designer d'une refonte. Tu pars d'une vidéo que l'utilisateur a déjà publiée et tu livres une nouvelle version. Elle garde son fond. Son script est plus accrocheur, il est dit par la voix clonée de l'utilisateur, et ses images sont redécoupées sur cette voix et habillées. La barre : une vidéo qu'on regarde jusqu'au bout et qu'on ne devine pas refaite à partir d'une ancienne.
+
+Deux **branches** :
+
+- **refonte** : l'utilisateur donne une ancienne vidéo, en fichier ou en lien. Ses images et son fond sont la matière de la nouvelle.
+- **nouvelle** : il n'y a pas d'ancienne vidéo, mais un sujet et ses sources. Les images sont des captures des sources, des clips de l'utilisateur et des séquences animées. C'est la branche de la vidéo du jour de `publish-youtube`.
 
 Tout passe par la commande `refonte-youtube`. Chaque sous-commande a son `--help`, et `refonte-youtube help script` donne la syntaxe de `script.md`. Le skill s'appuie sur trois autres skills : `montage-youtube` pour la transcription, `pub-video` pour la voix clonée, les bruitages, la musique et les séquences animées, et `video-verticale` pour la police.
 
@@ -16,7 +21,7 @@ Tout passe par la commande `refonte-youtube`. Chaque sous-commande a son `--help
 - **Tout ce qui se dit ou s'affiche est vrai.** Chaque fait vient de l'ancienne vidéo ou d'une source lue, et figure dans « Faits vérifiés » de `brief.md`. Ce qui a vieilli se demande à l'utilisateur ou se retire.
 - **La voix clonée est celle de l'utilisateur**, avec son profil voicebox. La livraison rappelle qu'elle se déclare comme contenu modifié ou synthétique sur YouTube.
 - **Tu ne vois pas la vidéo et tu n'entends pas le son.** Tu regardes les planches et tu mesures (`plan`, `mots`, `build`). La livraison dit ce qui reste à écouter.
-- **Les personnes et les tiers sont protégés** : ni données personnelles visibles, ni visage qui parle sous la nouvelle voix (voir [`references/visuel.md`](references/visuel.md)).
+- **Les personnes et les tiers sont protégés** : ni données personnelles visibles, ni visage qui parle sous la nouvelle voix (voir [`references/visuel.md`](references/visuel.md)). Les seules vidéos utilisées sont celles de l'utilisateur. D'un tiers, on ne montre que la capture d'une page publique citée comme source.
 - **La musique a une licence écrite**, dans `brief.md`.
 - **`script.md` porte les décisions, `brief.md` la mémoire.** Tu coches « Avancement » à chaque étape finie et tu y notes chaque décision qui n'est pas évidente.
 - **Tu livres des fichiers** ; la publication revient à l'utilisateur.
@@ -50,13 +55,18 @@ Lis la demande : `$ARGUMENTS` et la conversation. Ce qui n'est pas dit se décid
 
 Pose une question seulement si la vidéo est introuvable, si aucun profil de voix ne peut être choisi, ou si deux consignes se contredisent. Sinon, annonce tes choix en une phrase et avance.
 
-`refonte-youtube new <dossier> <vidéo|lien> --lang <langue> [--duree 10:00]`, avec `<dossier>` = `projets/<sujet>-refonte` s'il existe un dossier `projets/`, sinon `<sujet>-refonte`. La commande transcrit, repère les plans et dessine les planches. Toutes les commandes suivantes se lancent depuis ce dossier.
+- Branche refonte : `refonte-youtube new <dossier> <vidéo|lien> --lang <langue> [--duree 10:00]`, avec `<dossier>` = `projets/<sujet>-refonte` s'il existe un dossier `projets/`, sinon `<sujet>-refonte`. La commande transcrit, repère les plans et dessine les planches.
+- Branche nouvelle : `refonte-youtube new <dossier> --sujet "<titre>" --lang <langue> [--duree 10:00]`, avec `<dossier>` = `projets/<sujet>-youtube` (ou celui que donne la demande).
+
+Toutes les commandes suivantes se lancent depuis ce dossier.
 
 **Fini quand** le projet existe et que la section « Demande » de `brief.md` contient la demande et chaque choix par défaut.
 
-### 2. Lire l'ancienne vidéo
+### 2. Lire l'ancienne vidéo, ou rassembler les images
 
-Lis `source.md` en entier et ouvre chaque planche qu'il liste avec l'outil de lecture d'image. Si une partie est floue, regarde-la de près avec `refonte-youtube planche --de <a> --a <b> --pas 1`.
+**Branche nouvelle** : lis [`references/images.md`](references/images.md). L'étape est finie quand les faits de la vidéo sont dans « Faits vérifiés » avec leur source, et que chaque capture et chaque clip prévus sont dans le projet. Il faut aussi les avoir regardés et notés dans la section « Ancienne vidéo » de `brief.md`, renommée « Images ».
+
+**Branche refonte** : lis `source.md` en entier et ouvre chaque planche qu'il liste avec l'outil de lecture d'image. Si une partie est floue, regarde-la de près avec `refonte-youtube planche --de <a> --a <b> --pas 1`.
 
 **Fini quand** la section « Ancienne vidéo » de `brief.md` est remplie : ce qu'elle montre, son message, ses parties avec leurs temps, ses meilleurs passages à l'image, ce qui a vieilli. Les noms propres vus ou entendus vont dans « Noms et termes ». Si elle est surtout filmée face caméra, l'utilisateur le sait (voir [`references/visuel.md`](references/visuel.md)).
 

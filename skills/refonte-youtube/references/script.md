@@ -4,6 +4,7 @@ Le script garde le fond de l'ancienne vidéo et change la forme. La barre : une 
 
 ## 1. Partir de l'ancienne vidéo
 
+- Branche nouvelle : la matière est le sujet, ses faits vérifiés et ses images (voir [`images.md`](images.md)). Le reste de ce fichier vaut tel quel.
 - Dans `source.md` et dans la section « Ancienne vidéo » de `brief.md`, relève le message, les étapes et les preuves (démonstrations, chiffres, résultats). C'est la matière du script. Les formules de remplissage partent : « salut à tous », « comme je vous disais », les répétitions, les digressions.
 - **Tout ce qui se dit est vrai.** Un fait vient de l'ancienne vidéo ou d'une source que tu as lue. Il entre dans la table « Faits vérifiés » de `brief.md` avec cette source. Ce qui est dépassé (prix, interface changée, version) se demande à l'utilisateur ou se retire. Rendre une phrase plus percutante ne crée pas de nouveau chiffre ni de nouvelle promesse.
 - L'ordre peut changer : le résultat le plus fort passe en tête, une démonstration remonte avant l'explication.

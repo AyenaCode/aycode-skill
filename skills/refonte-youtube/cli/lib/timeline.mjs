@@ -74,7 +74,13 @@ export async function buildTimeline(root, cfg, lines, { estimate = false } = {})
 	const voices = loadVoices(root);
 	const mots = loadMots(root);
 	const { syllables } = await pub.voice();
-	const srcDur = cfg.source.duree;
+	const old = cfg.source?.video ?? null;
+	// Length of each video the passages come from: the old one, or another video of the user.
+	const lengths = new Map(old ? [[old, cfg.source.duree]] : []);
+	const lengthOf = async (f) => {
+		if (!lengths.has(f)) lengths.set(f, existsSync(f) ? (await probe(f)).duration : null);
+		return lengths.get(f);
+	};
 	const lead = cfg.voix.avance ?? 0.08;
 	const tempo = cfg.voix.tempo ?? 1;
 	const items = [];
@@ -82,7 +88,8 @@ export async function buildTimeline(root, cfg, lines, { estimate = false } = {})
 	const warnings = [];
 	const used = [];
 	let frame = 0;
-	let lastSrc = 0;
+	// Where the last passage stopped, for « = ».
+	let last = { file: old, t: 0 };
 
 	for (const [i, l] of lines.entries()) {
 		const v = l.visual;
@@ -114,6 +121,14 @@ export async function buildTimeline(root, cfg, lines, { estimate = false } = {})
 			if (!existsSync(file)) (estimate ? warn : err)(`${v.kind === 'motion' ? 'séquence' : 'image'} introuvable : ${v.file}`);
 			else media = { file, ...(await probe(file)) };
 		}
+		// The video a passage comes from.
+		let src = null;
+		let srcDur = null;
+		if (v.kind === 'source') {
+			src = v.file ? resolve(root, v.file) : v.cont ? last.file : old;
+			if (!src) err('ce projet n’a pas d’ancienne vidéo : donne le fichier, [video clips/demo.mp4 0:10-0:25].');
+			else if ((srcDur = await lengthOf(src)) === null) err(`vidéo introuvable : ${v.file}`);
+		}
 		if (!l.text && !v.dur) {
 			if (v.kind === 'source') T = v.ranges.reduce((s, [a, b]) => s + b - a, 0);
 			if (v.kind === 'motion') T = media?.duration ?? 3;
@@ -128,27 +143,31 @@ export async function buildTimeline(root, cfg, lines, { estimate = false } = {})
 		if (l.text) it.voice = { id: take?.id ?? null, file: take ? resolve(root, take.file) : null, at: it.start + lead, dur: D, estimated: !take };
 
 		// Picture.
-		if (v.kind === 'source') {
+		if (v.kind === 'source' && srcDur !== null) {
+			const name = src === old ? 'l’ancienne vidéo' : v.file ?? src;
 			let ranges = v.ranges;
-			if (v.cont) ranges = [[lastSrc, Math.min(srcDur, lastSrc + slot)]];
-			for (const [a, b] of ranges) if (b > srcDur + 0.05) err(`le passage ${a}-${b} dépasse la fin de l'ancienne vidéo (${srcDur.toFixed(1)} s).`);
+			if (v.cont) {
+				const from = last.file === src ? last.t : 0;
+				ranges = [[from, Math.min(srcDur, from + slot)]];
+			}
+			for (const [a, b] of ranges) if (b > srcDur + 0.05) err(`le passage ${a}-${b} dépasse la fin de ${name} (${srcDur.toFixed(1)} s).`);
 			ranges = ranges.map(([a, b]) => [a, Math.min(b, srcDur)]).filter(([a, b]) => b - a > 0.04);
 			if (!ranges.length) {
-				err(v.cont ? 'l’ancienne vidéo est finie : « = » n’a plus rien à montrer.' : 'aucun passage utilisable.');
+				err(v.cont ? `${name} est finie : « = » n’a plus rien à montrer.` : 'aucun passage utilisable.');
 				continue;
 			}
 			const fit = fitSource(ranges, slot, v.whole);
-			it.pieces = frames(fit.pieces.map((p) => ({ kind: 'source', file: cfg.source.video, ss: p.ss, len: p.len, k: p.k, outDur: p.outDur, zoom: v.zoom })), N, F);
-			const last = fit.pieces.at(-1);
-			lastSrc = last.ss + last.len;
+			it.pieces = frames(fit.pieces.map((p) => ({ kind: 'source', file: src, ss: p.ss, len: p.len, k: p.k, outDur: p.outDur, zoom: v.zoom })), N, F);
+			const end = fit.pieces.at(-1);
+			last = { file: src, t: end.ss + end.len };
 			it.fit = { k: fit.k, S: fit.S, hold: fit.hold };
 			if (fit.hold > HOLD_ZOOM && !v.zoom) it.pieces.at(-1).zoom = { k: 1.06, x: 0.5, y: 0.5, auto: true };
 			if (fit.hold > 1.5) warn(`image figée ${fit.hold.toFixed(1)} s en fin de plan : ajoute un passage ou allonge-le.`);
 			if (fit.k > 2.5) warn(`passage accéléré ×${fit.k.toFixed(1)} : vérifie qu'on suit encore l'action.`);
 			for (const p of it.pieces) {
-				const twice = used.find((u) => u.n !== l.n && Math.min(u.b, p.ss + p.len) - Math.max(u.a, p.ss) > 0.5);
+				const twice = used.find((u) => u.n !== l.n && u.file === src && Math.min(u.b, p.ss + p.len) - Math.max(u.a, p.ss) > 0.5);
 				if (twice) warn(`image déjà montrée à la réplique ${twice.n} (${p.ss.toFixed(1)} s).`);
-				used.push({ n: l.n, a: p.ss, b: p.ss + p.len });
+				used.push({ n: l.n, file: src, a: p.ss, b: p.ss + p.len });
 			}
 		} else if (v.kind === 'motion') {
 			if (media) {
@@ -158,7 +177,10 @@ export async function buildTimeline(root, cfg, lines, { estimate = false } = {})
 				if (slot - media.duration > 1) warn(`la séquence (${media.duration.toFixed(1)} s) est plus courte que la réplique : sa dernière image reste ${(slot - media.duration).toFixed(1)} s.`);
 			}
 		} else if (v.kind === 'image') {
-			if (media) it.pieces = [{ kind: 'image', file: media.file, frames: N, outDur: slot, zoom: v.zoom ?? { k: 1.08, x: 0.5, y: 0.5, auto: true } }];
+			// A capture scrolls only if, at the output width, it is clearly taller than the frame.
+			const tall = media && media.height * (cfg.sortie.largeur / media.width) > cfg.sortie.hauteur * 1.2;
+			if (media && v.scroll && !tall) warn(`l'image ${v.file} n'est pas assez haute pour défiler : elle reçoit un zoom lent.`);
+			if (media) it.pieces = [{ kind: 'image', file: media.file, frames: N, outDur: slot, scroll: v.scroll && tall, zoom: v.scroll && tall ? null : v.zoom ?? { k: 1.08, x: 0.5, y: 0.5, auto: true } }];
 		} else {
 			it.pieces = [{ kind: 'carton', fond: v.fond ?? cfg.style.fond, frames: N, outDur: slot, zoom: null }];
 			it.carton = v.label ?? (l.keywords.length ? l.keywords.map((k) => k.text).join(' ') : l.text);

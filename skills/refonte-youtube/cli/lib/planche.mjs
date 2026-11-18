@@ -2,20 +2,21 @@
 // passages), the preview or the final export (to review the result).
 import { existsSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { loadConfig, num, parseTc, probe, projectRoot, run } from './util.mjs';
 
 export const booleans = ['help', 'apercu', 'final'];
-const HELP = `refonte-youtube planche [--de 0] [--a <fin>] [--pas 1] [--apercu | --final]
+const HELP = `refonte-youtube planche [--de 0] [--a <fin>] [--pas 1] [--apercu | --final | --fichier clips/demo.mp4]
     Une image toutes les --pas secondes entre --de et --a (secondes ou 1:12.5), avec son temps, 60 images au plus
     → work/planches/<vidéo>-<de>-<a>.png. Sans option : l'ancienne vidéo ; --apercu : exports/<nom>_apercu.mp4 ;
-    --final : exports/<nom>.mp4. Ouvre ensuite l'image avec l'outil de lecture d'image.`;
+    --final : exports/<nom>.mp4 ; --fichier : une autre vidéo (un clip). Ouvre ensuite l'image avec l'outil de lecture d'image.`;
 
 export default async function (_cmd, a) {
 	if (a.help) return console.log(HELP);
 	const root = projectRoot();
 	const cfg = loadConfig(root);
-	const [file, label] = a.final ? [join(root, 'exports', `${cfg.nom}.mp4`), 'final'] : a.apercu ? [join(root, 'exports', `${cfg.nom}_apercu.mp4`), 'apercu'] : [cfg.source.video, 'source'];
+	const [file, label] = a.final ? [join(root, 'exports', `${cfg.nom}.mp4`), 'final'] : a.apercu ? [join(root, 'exports', `${cfg.nom}_apercu.mp4`), 'apercu'] : a.fichier && a.fichier !== true ? [resolve(root, String(a.fichier)), basename(String(a.fichier)).replace(/\.[^.]+$/, '')] : [cfg.source?.video, 'source'];
+	if (!file) throw new Error('ce projet n’a pas d’ancienne vidéo : donne --fichier <vidéo>, --apercu ou --final.');
 	if (!existsSync(file)) throw new Error(`${file} n'existe pas encore${a.final ? ' : lance « refonte-youtube build »' : a.apercu ? ' : lance « refonte-youtube apercu »' : ''}.`);
 	const length = (await probe(file)).duration;
 	const from = a.de !== undefined ? parseTc(a.de) : 0;
