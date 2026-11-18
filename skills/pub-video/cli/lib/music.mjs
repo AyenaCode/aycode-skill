@@ -2,7 +2,7 @@
 // under the video so that its drop lands on the reveal.
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, join, relative } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { decode, fft } from './dsp.mjs';
 import { assetRoot, projectRoot, fmt, pad, num } from './util.mjs';
 
@@ -356,7 +356,7 @@ export default async function (_cmd, a) {
 		const r = await analyse(a._[1]);
 		report(r, false);
 		const f = fitTrack(r, num(a.at), { drop: a.drop === undefined ? undefined : num(a.drop), duration: num(a.duration, 30) });
-		const src = relative(join(root, 'videos'), join(process.cwd(), a._[1])).replace(/\\/g, '/');
+		const src = relative(join(root, 'videos'), resolve(a._[1])).replace(/\\/g, '/');
 		console.log(`\nDans setup() de la vidéo :\n  bpm: ${f.bpm},\n  music: { src: '${src}', start: ${f.start}, drop: ${num(a.at)}${f.intro ? `, intro: { until: ${f.intro.until}, lowpass: [${f.intro.lowpass}], lift: ${f.intro.lift} }` : ''} },`);
 		const n = Math.round(f.beatsBefore);
 		const off = a.drop === undefined ? offBeat(r) : 0;

@@ -3,7 +3,7 @@
 // Read-only by construction: it only opens URLs and scrolls. It never clicks, types or submits.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { launch } from './browser.mjs';
 import { num } from './util.mjs';
 
@@ -98,7 +98,7 @@ const slug = (url) => {
 
 export default async function (_cmd, a) {
 	if (a.help || !a._.length) return console.log(HELP);
-	const out = join(process.cwd(), String(a.out ?? 'captures'));
+	const out = resolve(String(a.out ?? 'captures'));
 	await mkdir(join(out, 'fonts'), { recursive: true });
 	const devices = a.device === 'both' ? ['mobile', 'desktop'] : [String(a.device ?? 'mobile')];
 	const lang = String(a.lang ?? Intl.DateTimeFormat().resolvedOptions().locale);

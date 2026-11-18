@@ -2,7 +2,7 @@
 // shots out on sheets, so its style can be described from evidence.
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { run, ffmpeg, which, findWhisper, fmt, num } from './util.mjs';
 import { analyse } from './music.mjs';
 import { loudness } from './audio.mjs';
@@ -18,7 +18,8 @@ const HELP = `pub-video ref <url | fichier> [--out references] [--lang auto] [--
 
 export default async function (_cmd, a) {
 	if (a.help || !a._[0]) return console.log(HELP);
-	const dir = join(process.cwd(), String(a.out ?? 'references'));
+	// resolve, not join: an absolute --out stays as given instead of being glued after the current folder.
+	const dir = resolve(String(a.out ?? 'references'));
 	await mkdir(dir, { recursive: true });
 	let file = a._[0];
 	if (/^https?:/.test(file)) {
