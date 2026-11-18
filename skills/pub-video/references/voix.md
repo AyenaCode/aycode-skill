@@ -29,11 +29,11 @@ Quand la demande le prévoit, la voix off se génère au lieu de s'enregistrer :
 
 ```
 pub-video voice profils --profil <nom>                                  # code 0 : voicebox répond et le profil existe
-pub-video voice synth <vidéo> --profil <nom> --consigne "<ton>"         # une prise par réplique → audio/voix/prises/
+pub-video voice synth <vidéo> --profil <nom>                            # une prise par réplique → audio/voix/prises/
 ```
 
 - **Le profil** se crée une fois dans voicebox, par l'utilisateur, avec sa propre voix ou une voix qu'il a le droit d'utiliser.
-- **Le ton** : `--consigne` décrit la façon de dire en quelques mots (« énergique, rythme rapide, souriant ») ; les moteurs Qwen la suivent. `--tempo 1.05` accélère toutes les prises sans changer la hauteur.
+- **Le ton vient de l'échantillon** : la voix clonée reprend la hauteur, l'énergie et le débit de l'enregistrement du profil, et aucun moteur de clonage de voicebox ne suit de consigne de ton. Pour une voix plus grave ou plus vive, l'utilisateur change l'échantillon du profil : un nouvel enregistrement dans le ton voulu, ou les meilleures prises générées mises bout à bout. `--tempo 1.05` accélère toutes les prises sans changer la hauteur.
 - **Tu n'entends pas les prises, tu les mesures** : `synth` compare la durée parlée de chaque prise à celle attendue pour son texte et marque `SILENCE`, `TROP LONGUE ?` ou `TROP COURTE ?`. Refais chaque prise marquée avec `--ligne <n> --seed <nombre>` jusqu'à ce qu'aucune ne le soit.
 - **Licence** : `synth` refuse OmniVoice, sous licence non commerciale. Note le moteur et le profil dans `brief.md`.
 - **La livraison le dit** : la voix est de synthèse. L'utilisateur la signale comme contenu généré par IA là où la plateforme le demande.

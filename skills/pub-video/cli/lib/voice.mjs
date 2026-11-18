@@ -26,10 +26,11 @@ pub-video voice guide <vidéo>
 pub-video voice profils [--profil <nom>] [--url http://127.0.0.1:17493]
     Voix de synthèse locale (voicebox) : dit si le serveur répond et liste ses profils de voix.
     Code de sortie 1 si voicebox ne répond pas, ou si le profil donné par --profil n'existe pas.
-pub-video voice synth <vidéo> --profil <nom> [--consigne "énergique, rapide"] [--tempo 1.05] [--ligne 3] [--moteur qwen] [--url …]
+pub-video voice synth <vidéo> --profil <nom> [--tempo 1.05] [--ligne 3] [--seed 7] [--moteur qwen] [--url …]
     Dit chaque réplique avec la voix clonée du profil → audio/voix/prises/<vidéo>-01.wav, -02.wav…, puis affiche
-    la commande de mixage. --consigne : le ton (moteurs Qwen) ; --tempo : accélère sans changer la hauteur ;
-    --ligne : refait une seule réplique ; --langue : sinon celle de la vidéo (<html lang>).
+    la commande de mixage. Le ton et la hauteur de la voix viennent de l'échantillon du profil. --tempo : accélère
+    sans changer la hauteur ; --ligne : refait une seule réplique ; --seed : une autre prise de la même réplique ;
+    --langue : sinon celle de la vidéo (<html lang>).
 pub-video voice mix <vidéo> <prise.wav> | <prise1> <prise2> …  [--cuts t1,t2,…] [--lead 0.06] [--max-tempo 1.12]
     Une prise par réplique (dans l'ordre), ou une seule prise de tout le script avec une pause entre les répliques.
     Nettoie chaque prise, la pose sur sa scène, l'accélère un peu si elle déborde, puis refait le mixage et
@@ -227,13 +228,13 @@ export default async function (_cmd, a) {
 		const dir = join(root, 'audio', 'voix', 'prises');
 		await mkdir(dir, { recursive: true });
 		const take = (n) => join(dir, `${name}-${String(n).padStart(2, '0')}.wav`);
-		console.log(`Voix « ${p.name} » · ${engine ?? 'moteur par défaut'} · ${language}${a.consigne && a.consigne !== true ? ` · consigne : ${a.consigne}` : ''}`);
+		console.log(`Voix « ${p.name} » · ${engine ?? 'moteur par défaut'} · ${language}`);
 		console.log(`  ${pad('n°', 7)}${pad('dit en', 8)}${pad('attendu', 9)}${pad('calcul', 9)}texte`);
 		const odd = [];
 		for (const n of only) {
 			const got = `${take(n)}.voicebox`;
 			const t0 = Date.now();
-			await speak(server, { text: lines[n - 1].text, profile: p.id, language, engine: a.moteur ? engine : undefined, instruct: a.consigne === true ? undefined : a.consigne, seed: a.seed }, got);
+			await speak(server, { text: lines[n - 1].text, profile: p.id, language, engine: a.moteur ? engine : undefined, seed: a.seed }, got);
 			await ffmpeg(['-i', got, '-af', tempo !== 1 ? `atempo=${tempo}` : 'anull', '-ac', '1', '-ar', '48000', take(n)]);
 			await run('rm', ['-f', got]);
 			// A failed generation shows in its length: silence, or speech far longer or shorter than its text.

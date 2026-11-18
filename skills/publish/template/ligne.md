@@ -24,7 +24,6 @@ Lue par le skill publish à chaque journée. Modifie-la quand tu veux : la journ
 ## Voix
 
 - Profil voicebox : (nom du profil de ta voix clonée ; vide = voix off fournie à la main)
-- Consigne de ton : énergique, rythme rapide, souriant
 
 ## Références
 

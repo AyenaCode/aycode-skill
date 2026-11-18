@@ -23,7 +23,7 @@ Ligne éditoriale : <atelier>/publish/ligne.md (public, ton, phrase de fin, règ
 Langue : <langue>. Durée : <durée>. Plateformes : Reels, TikTok et Shorts.
 
 Voix off : <garde une des deux consignes>
-- Automatique : voix de synthèse avec le profil voicebox « <profil> » et la consigne de ton « <consigne> ». Quand la vidéo sans voix est rendue, fais l'étape 10 de pub-video (voice synth, puis voice mix), puis les étapes 4 à 9 de video-verticale.
+- Automatique : voix de synthèse avec le profil voicebox « <profil> ». Quand la vidéo sans voix est rendue, fais l'étape 10 de pub-video (voice synth, puis voice mix), puis les étapes 4 à 9 de video-verticale.
 - Manuelle : arrête-toi quand la vidéo sans voix est rendue (pub-video build), que audio/voix/<vidéo>.txt passe « pub-video voice check » et que le guide est écrit (pub-video voice guide).
 
 Tu travailles seul : tu décides chaque choix et tu le notes dans brief.md, et tes contrôles remplacent les validations par l'utilisateur. Un fait qui ne se confirme pas à sa source sort de la vidéo.

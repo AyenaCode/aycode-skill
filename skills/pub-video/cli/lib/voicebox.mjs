@@ -46,10 +46,9 @@ export function engineProblem(engine, language) {
 
 // Generate one line and write the audio to `out`. Generation is queued on the server: wait for its status
 // stream (server-sent events) to say completed, then download the audio.
-export async function speak(server, { text, profile, language, engine, instruct, seed }, out) {
+export async function speak(server, { text, profile, language, engine, seed }, out) {
 	const body = { profile_id: profile, text, language };
 	if (engine) body.engine = engine;
-	if (instruct) body.instruct = String(instruct).slice(0, 500);
 	if (seed !== undefined) body.seed = Number(seed);
 	const gen = await json(server, '/generate', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 	await finished(server, gen.id);
