@@ -37,7 +37,8 @@ pub-video voice mix <vidéo> <prise.wav> | <prise1> <prise2> …  [--cuts t1,t2,
     exporte exports/<vidéo>-<durée>s_avec-voix.mp4. --cuts donne les secondes de coupe si les pauses ne suffisent pas.`;
 
 // Spoken length: syllables are a steadier measure than words (French: a final silent e is not said).
-function syllables(text) {
+// Exported for refonte-youtube, which times its script the same way.
+export function syllables(text) {
 	let n = 0;
 	for (const w of text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean)) {
 		if (/^\d+$/.test(w)) {

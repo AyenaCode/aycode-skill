@@ -12,6 +12,7 @@ Skills pour les agents de code, livrés en plugin Claude Code. Chaque skill a so
 | [`pentester`](skills/pentester/SKILL.md) | Relit le code en pensant comme un attaquant, sans rien attaquer. Couvre le mobile (React Native), les API, le web et l'infra (Docker, Kubernetes, CI). Il écrit un rapport Markdown simple, avec la gravité et le correctif de chaque faille. |
 | [`montage-youtube`](skills/montage-youtube/SKILL.md) | Monte une vidéo YouTube à partir de rushs enregistrés, face caméra ou capture d'écran commentée. Il coupe les silences, les hésitations et les reprises, nettoie la voix, puis exporte le `.mp4` et ses sous-titres `.srt`. Une vidéo de référence peut fixer le rythme. |
 | [`video-verticale`](skills/video-verticale/SKILL.md) | Fabrique une vidéo verticale pour Reels, TikTok et Shorts, à partir d'un sujet (motion design) ou d'un enregistrement vertical. Il dérushe, incruste des sous-titres animés mot à mot, ajoute un titre d'accroche, des zooms sur les coupes, une musique baissée sous la voix et des bruitages, puis exporte le `.mp4` et sa couverture. |
+| [`refonte-youtube`](skills/refonte-youtube/SKILL.md) | Refait une ancienne vidéo YouTube en version pro et animée. Il transcrit l'ancienne vidéo et réécrit un script plus accrocheur. Il le fait dire par ta voix clonée (voicebox), redécoupe les images sur cette voix, incruste les mots forts et ajoute des séquences en motion design, une musique libre et des bruitages. Il exporte ensuite le `.mp4`, ses sous-titres `.srt` et ses chapitres YouTube. |
 | [`publish`](skills/publish/SKILL.md) | Produit les vidéos verticales du jour (3 par défaut). Il cherche les sujets qui ont de la demande, fait fabriquer chaque vidéo par `video-verticale` et `pub-video`, génère la voix off avec ta voix clonée (voicebox) ou te donne les textes à enregistrer, contrôle le tout et livre les vidéos avec leur légende. |
 
 ## Installation
@@ -91,6 +92,27 @@ Les règles du projet (`CLAUDE.md`, `AGENTS.md`) passent avant celles des skills
 - FFmpeg avec libass (sous-titres incrustés), comme celui des paquets Ubuntu ou Homebrew
 
 À chaque usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `video-verticale` dans `~/.local/bin` et installe aussi ses deux skills frères quand ils sont à côté. Ensuite, `video-verticale doctor` vérifie que tout est en place, skills frères compris. La police des sous-titres (Montserrat Black par défaut) se télécharge depuis Google Fonts dans chaque projet.
+
+## refonte-youtube
+
+```
+/aycode:refonte-youtube <vidéo ou lien> [durée visée, profil de voix, consignes]
+```
+
+1. Il télécharge l'ancienne vidéo si tu donnes un lien, la transcrit avec ses temps, repère ses changements de plan et dessine des planches d'images.
+2. Il écrit un nouveau script, réplique par réplique. Chaque réplique dit ce qu'on voit : un passage de l'ancienne vidéo, une séquence animée, une image ou un carton. Les mots forts s'affichent quand ils sont dits. Tu valides le texte avant que la voix soit générée.
+3. Il génère la voix avec ton profil voicebox, puis la retranscrit pour repérer les prises ratées.
+4. Il cale les images sur la nouvelle voix. Un passage est coupé, ralenti ou accéléré pour tenir sa réplique, avec un zoom lent si l'image doit tenir. Puis il ajoute les titres de chapitre, la musique (baissée quand la voix parle) et les bruitages.
+5. Tu valides un aperçu, puis il exporte la vidéo, les sous-titres `.srt` et les chapitres à coller dans la description.
+
+### Prérequis
+
+- Les skills `montage-youtube`, `pub-video` et `video-verticale`, fournis avec le plugin : il reprend leur transcription, leur voix clonée, leurs bruitages, leur musique et leurs séquences animées
+- FFmpeg avec libass, et whisper.cpp (comme pour `montage-youtube`)
+- [voicebox](https://github.com/jamiepine/voicebox), avec le profil de ta voix clonée
+- Optionnel : `yt-dlp`, pour partir d'un lien
+
+À chaque usage, le skill lance `install.sh`, sans sudo. Ce script met la commande `refonte-youtube` dans `~/.local/bin` et installe aussi ses trois skills frères quand ils sont à côté. Ensuite, `refonte-youtube doctor` vérifie que tout est en place.
 
 ## publish
 
