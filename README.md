@@ -12,7 +12,8 @@ Skills pour les agents de code, livrés en plugin Claude Code. Chaque skill a so
 | [`pentester`](skills/pentester/SKILL.md) | Relit le code en pensant comme un attaquant, sans rien attaquer. Couvre le mobile (React Native), les API, le web et l'infra (Docker, Kubernetes, CI). Il écrit un rapport Markdown simple, avec la gravité et le correctif de chaque faille. |
 | [`montage-youtube`](skills/montage-youtube/SKILL.md) | Monte une vidéo YouTube à partir de rushs enregistrés, face caméra ou capture d'écran commentée. Il coupe les silences, les hésitations et les reprises, nettoie la voix, puis exporte le `.mp4` et ses sous-titres `.srt`. Une vidéo de référence peut fixer le rythme. |
 | [`video-verticale`](skills/video-verticale/SKILL.md) | Fabrique une vidéo verticale pour Reels, TikTok et Shorts, à partir d'un sujet (motion design) ou d'un enregistrement vertical. Il dérushe, incruste des sous-titres animés mot à mot, ajoute un titre d'accroche, des zooms sur les coupes, une musique baissée sous la voix et des bruitages, puis exporte le `.mp4` et sa couverture. |
-| [`refonte-youtube`](skills/refonte-youtube/SKILL.md) | Refait une ancienne vidéo YouTube en version pro et animée. Il transcrit l'ancienne vidéo et réécrit un script plus accrocheur. Il le fait dire par ta voix clonée (voicebox), redécoupe les images sur cette voix, incruste les mots forts et ajoute des séquences en motion design, une musique libre et des bruitages. Il exporte ensuite le `.mp4`, ses sous-titres `.srt` et ses chapitres YouTube. |
+| [`refonte-youtube`](skills/refonte-youtube/SKILL.md) | Refait une ancienne vidéo YouTube en version pro et animée. Il transcrit l'ancienne vidéo et réécrit un script plus accrocheur. Il le fait dire par ta voix clonée (voicebox), redécoupe les images sur cette voix, incruste les mots forts et ajoute des séquences en motion design, une musique libre et des bruitages. Il exporte ensuite le `.mp4`, ses sous-titres `.srt` et ses chapitres YouTube. Il sait aussi faire une vidéo nouvelle sur un sujet, sans tournage. |
+| [`publish-youtube`](skills/publish-youtube/SKILL.md) | Produit la vidéo YouTube du jour, de 8 à 10 minutes, sans tournage. Il cherche un sujet qui a de la demande et fait écrire le script, que tu valides. Puis il fait fabriquer la vidéo par `refonte-youtube` et `pub-video` : ta voix clonée, des captures des sources, des séquences animées avec personnages et objets, et la musique. Il te livre la vidéo avec ses titres, sa description et ses chapitres. `refonte <vidéo>` refait une ancienne vidéo de la chaîne. |
 | [`publish`](skills/publish/SKILL.md) | Produit les vidéos verticales du jour (3 par défaut). Il cherche les sujets qui ont de la demande, fait fabriquer chaque vidéo par `video-verticale` et `pub-video`, génère la voix off avec ta voix clonée (voicebox) ou te donne les textes à enregistrer, contrôle le tout et livre les vidéos avec leur légende. |
 
 ## Installation
@@ -136,6 +137,28 @@ Il ne publie rien : la publication reste à toi.
 
 - Les skills `video-verticale`, `pub-video` et `montage-youtube`, fournis avec le plugin
 - Optionnel : voicebox, avec un profil créé une fois à partir d'un enregistrement de ta voix. Sur Linux, il n'y a pas encore de version prête à installer : compile-le, ou lance son `docker-compose.yml` (adresse `http://127.0.0.1:17600`). `pub-video voice profils` dit si la commande le trouve.
+
+## publish-youtube
+
+```
+/aycode:publish-youtube [consigne du jour]
+/aycode:publish-youtube refonte <vidéo ou lien>
+/aycode:publish-youtube finir
+```
+
+Lance-le depuis ton atelier vidéo. Il y crée `publish-youtube/` : la ligne éditoriale de ta chaîne (`ligne.md`, préremplie depuis celle de `publish` si elle existe), le journal des vidéos et une page par journée, qui sert aussi de mémoire pour reprendre.
+
+1. Il cherche un sujet qui a de la demande et qui tient 8 à 10 minutes sans tournage : un tuto, une actu décryptée, un comparatif, des erreurs à éviter ou un concept expliqué. Chaque fait vient d'une source primaire, avec sa date.
+2. Un sous-agent écrit le script avec `refonte-youtube`. Par défaut, la journée s'arrête là : tu relis le script, puis `/aycode:publish-youtube finir` lance la suite.
+3. Des sous-agents génèrent ta voix clonée, choisissent la musique et fabriquent les séquences animées avec `pub-video` (personnages simples, objets, parcours, tutos). Puis ils assemblent la vidéo.
+4. Il contrôle la vidéo sur des planches d'images, puis te livre la vidéo, ses sous-titres, trois titres, une description avec les chapitres et les sources, et une idée de miniature.
+
+Avec `refonte <vidéo>`, il refait une ancienne vidéo de ta chaîne de la même façon. Il ne publie rien : la publication reste à toi.
+
+### Prérequis
+
+- Les skills `refonte-youtube`, `pub-video`, `montage-youtube` et `video-verticale`, fournis avec le plugin
+- [voicebox](https://github.com/jamiepine/voicebox) avec le profil de ta voix clonée : une vidéo de dix minutes ne se fait pas sans
 
 ## Licence
 
