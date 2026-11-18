@@ -8,13 +8,13 @@ Skills pour les agents de code, livrés en plugin Claude Code. Chaque skill a so
 |---|---|
 | [`ship`](skills/ship/SKILL.md) | Mène une tâche de code de bout en bout. Il fait valider le plan au dev, puis enchaîne les étapes : coder, vérifier, commiter. Il simplifie ensuite tout le changement, le fait contrôler par un vérificateur indépendant et écrit un rapport dans la langue du dev. |
 | [`planner`](skills/planner/SKILL.md) | Planifie une tâche de code sans l'écrire. Il écrit un résumé court dans la langue du dev, que le dev peut modifier, et un plan détaillé que `ship` exécute. |
-| [`pub-video`](skills/pub-video/SKILL.md) | Fabrique une pub vidéo en motion design pour un produit, à partir de son URL ou de son code. Le skill écrit le concept, le storyboard et la voix off, puis cale une musique libre au temps près, pose les bruitages et exporte le `.mp4`. |
+| [`pub-video`](skills/pub-video/SKILL.md) | Fabrique une pub vidéo en motion design pour un produit, à partir de son URL ou de son code. Le skill écrit le concept, le storyboard et la voix off, la fait dire par ta voix clonée (voicebox), cale une musique libre au temps près, pose les bruitages et exporte le `.mp4`. |
 | [`pentester`](skills/pentester/SKILL.md) | Relit le code en pensant comme un attaquant, sans rien attaquer. Couvre le mobile (React Native), les API, le web et l'infra (Docker, Kubernetes, CI). Il écrit un rapport Markdown simple, avec la gravité et le correctif de chaque faille. |
 | [`montage-youtube`](skills/montage-youtube/SKILL.md) | Monte une vidéo YouTube à partir de rushs enregistrés, face caméra ou capture d'écran commentée. Il coupe les silences, les hésitations et les reprises, nettoie la voix, puis exporte le `.mp4` et ses sous-titres `.srt`. Une vidéo de référence peut fixer le rythme. |
 | [`video-verticale`](skills/video-verticale/SKILL.md) | Fabrique une vidéo verticale pour Reels, TikTok et Shorts, à partir d'un sujet (motion design) ou d'un enregistrement vertical. Il dérushe, incruste des sous-titres animés mot à mot, ajoute un titre d'accroche, des zooms sur les coupes, une musique baissée sous la voix et des bruitages, puis exporte le `.mp4` et sa couverture. |
 | [`refonte-youtube`](skills/refonte-youtube/SKILL.md) | Refait une ancienne vidéo YouTube en version pro et animée. Il transcrit l'ancienne vidéo et réécrit un script plus accrocheur. Il le fait dire par ta voix clonée (voicebox), redécoupe les images sur cette voix, incruste les mots forts et ajoute des séquences en motion design, une musique libre et des bruitages. Il exporte ensuite le `.mp4`, ses sous-titres `.srt` et ses chapitres YouTube. Il sait aussi faire une vidéo nouvelle sur un sujet, sans tournage. |
 | [`publish-youtube`](skills/publish-youtube/SKILL.md) | Produit la vidéo YouTube du jour, de 8 à 10 minutes, sans tournage. Il cherche un sujet qui a de la demande et fait écrire le script, que tu valides. Puis il fait fabriquer la vidéo par `refonte-youtube` et `pub-video` : ta voix clonée, des captures des sources, des séquences animées avec personnages et objets, et la musique. Il te livre la vidéo avec ses titres, sa description et ses chapitres. `refonte <vidéo>` refait une ancienne vidéo de la chaîne. |
-| [`publish`](skills/publish/SKILL.md) | Produit les vidéos verticales du jour (3 par défaut). Il cherche les sujets qui ont de la demande, fait fabriquer chaque vidéo par `video-verticale` et `pub-video`, génère la voix off avec ta voix clonée (voicebox) ou te donne les textes à enregistrer, contrôle le tout et livre les vidéos avec leur légende. |
+| [`publish`](skills/publish/SKILL.md) | Produit la vidéo verticale du jour, de 50 s à 1 min 30. Il te propose trois sujets qui ont de la demande et fait fabriquer celui que tu choisis par `video-verticale` et `pub-video`. La voix off est dite par ta voix clonée (voicebox), ou il te donne les textes à enregistrer. Il contrôle la vidéo et te la livre avec sa légende. |
 
 ## Installation
 
@@ -70,7 +70,7 @@ Les règles du projet (`CLAUDE.md`, `AGENTS.md`) passent avant celles des skills
 - FFmpeg, avec ffprobe
 - Optionnel : `yt-dlp`, pour télécharger une vidéo de référence
 - Optionnel : `whisper.cpp`, pour transcrire une référence et caler la voix off
-- Optionnel : [voicebox](https://github.com/jamiepine/voicebox), pour générer la voix off avec une voix clonée (`pub-video voice synth`)
+- Optionnel : [voicebox](https://github.com/jamiepine/voicebox). Quand il répond avec le profil de ta voix clonée, c'est elle qui dit la voix off (`pub-video voice synth`) ; sans lui, ou si tu le demandes, tu enregistres la voix toi-même, guidé par une vidéo
 
 À chaque usage, le skill lance `install.sh`, sans sudo. La première fois, ce script installe les dépendances Node, un Chromium sans écran et la commande `pub-video` dans `~/.local/bin`. Les fois suivantes, il ne fait que pointer la commande sur la version à jour du skill. Ensuite, `pub-video doctor` vérifie que tout est en place.
 
@@ -119,17 +119,18 @@ Les règles du projet (`CLAUDE.md`, `AGENTS.md`) passent avant celles des skills
 
 ```
 /aycode:publish [consigne du jour]
+/aycode:publish <1 | 2 | 3>
 /aycode:publish finir
 ```
 
-Lance-le depuis ton atelier vidéo, le dossier où vivent tes projets. Il y crée `publish/` : ta ligne éditoriale (`ligne.md`, remplie au premier lancement), le journal des vidéos déjà faites et une page par journée, qui sert aussi de mémoire pour reprendre.
+Lance-le depuis ton atelier vidéo, le dossier où vivent tes projets. Il y crée `publish/` : ta ligne éditoriale (`ligne.md`, remplie au premier lancement, avec la durée et le rythme des vidéos), le journal des vidéos déjà faites et une page par journée, qui sert aussi de mémoire pour reprendre.
 
-1. Il cherche des sujets qui ont de la demande, dans trois créneaux : une actu de la semaine, une astuce durable et ton domaine d'expertise. Chaque fait vient d'une source primaire, avec sa date.
-2. Il fait fabriquer chaque vidéo par `video-verticale` et `pub-video`, l'une après l'autre, chacune par un sous-agent.
+1. Il te propose trois sujets qui ont de la demande, un par créneau : une actu de la semaine, une astuce durable et ton domaine d'expertise. Chaque fait vient d'une source primaire, avec sa date. Tu choisis celui à faire, tout de suite ou plus tard avec `/aycode:publish <numéro>`. Un sujet imposé dans la consigne du jour se fait sans proposition.
+2. Un sous-agent fabrique la vidéo avec `video-verticale` et `pub-video` : 50 s à 1 min 30, la durée que le sujet tient sans remplissage, au rythme fixé dans `ligne.md`.
 3. La voix off :
-   - **automatique** si [voicebox](https://github.com/jamiepine/voicebox) tourne sur ta machine et que le profil de ta voix clonée est noté dans `ligne.md` : les vidéos sortent finies ;
-   - **manuelle** sinon : il te donne les textes, réplique par réplique, et le dossier où déposer tes fichiers (enregistrés ou générés ailleurs). Ensuite, `/aycode:publish finir` termine les vidéos.
-4. Il contrôle chaque vidéo, puis te livre les fichiers, leur couverture, une légende prête à coller et les sources.
+   - **automatique** si [voicebox](https://github.com/jamiepine/voicebox) tourne sur ta machine et que le profil de ta voix clonée est noté dans `ligne.md` : la vidéo sort finie ;
+   - **manuelle** sinon : il te donne les textes, réplique par réplique, et le dossier où déposer tes fichiers (enregistrés ou générés ailleurs). Ensuite, `/aycode:publish finir` termine la vidéo.
+4. Il contrôle la vidéo, puis te livre le fichier, sa couverture, une légende prête à coller et les sources.
 
 Il ne publie rien : la publication reste à toi.
 

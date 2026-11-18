@@ -6,11 +6,11 @@ Mémoire de la journée : chaque étape finie se coche, chaque décision s'écri
 
 - [ ] 0. Ligne éditoriale lue, journée ouverte
 - [ ] 1. Outils vérifiés ; mode de voix :
-- [ ] 2. Sujets choisis
-- [ ] 3. Vidéos fabriquées
+- [ ] 2. Trois sujets proposés ; choix de l'utilisateur :
+- [ ] 3. Vidéo fabriquée
 - [ ] 4. Voix off manuelle reçue et posée (mode automatique : « sans objet »)
-- [ ] 5. Vidéos contrôlées
-- [ ] 6. Vidéos livrées, journal à jour
+- [ ] 5. Vidéo contrôlée
+- [ ] 6. Vidéo livrée, journal à jour
 
 ## Consigne du jour
 
@@ -20,9 +20,9 @@ Mémoire de la journée : chaque étape finie se coche, chaque décision s'écri
 
 ## Sujets
 
-<!-- Par sujet : titre et mot-clé, créneau, promesse, accroche, faits (source primaire, date), preuve de demande. -->
+<!-- Les trois propositions, numérotées 1 à 3 : titre et mot-clé, créneau, promesse, accroche, faits (source primaire, date), non confirmé, preuve de demande, durée. Puis le choix de l'utilisateur. -->
 
-## Vidéos
+## Vidéo
 
 | Sujet | Projet d'habillage | Statut | Vidéo livrée |
 |---|---|---|---|
@@ -33,4 +33,4 @@ Mémoire de la journée : chaque étape finie se coche, chaque décision s'écri
 
 ## Livraison
 
-<!-- Par vidéo : légende, sources, contrôles, ce qui reste à écouter. -->
+<!-- Légende, sources, contrôles, ce qui reste à écouter. -->
