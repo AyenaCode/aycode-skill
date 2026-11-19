@@ -15,6 +15,7 @@ Skills pour les agents de code, livrés en plugin Claude Code. Chaque skill a so
 | [`refonte-youtube`](skills/refonte-youtube/SKILL.md) | Refait une ancienne vidéo YouTube en version pro et animée. Il transcrit l'ancienne vidéo et réécrit un script plus accrocheur. Il le fait dire par ta voix clonée (voicebox), redécoupe les images sur cette voix, incruste les mots forts et ajoute des séquences en motion design, une musique libre et des bruitages. Il exporte ensuite le `.mp4`, ses sous-titres `.srt` et ses chapitres YouTube. Il sait aussi faire une vidéo nouvelle sur un sujet, sans tournage. |
 | [`publish-youtube`](skills/publish-youtube/SKILL.md) | Produit la vidéo YouTube du jour, de 8 à 10 minutes, sans tournage. Il cherche un sujet qui a de la demande et fait écrire le script, que tu valides. Puis il fait fabriquer la vidéo par `refonte-youtube` et `pub-video` : ta voix clonée, des captures des sources, des séquences animées avec personnages et objets, et la musique. Il te livre la vidéo avec ses titres, sa description et ses chapitres. `refonte <vidéo>` refait une ancienne vidéo de la chaîne. |
 | [`publish`](skills/publish/SKILL.md) | Produit la vidéo verticale du jour, de 50 s à 1 min 30. Il te propose trois sujets qui ont de la demande et fait fabriquer celui que tu choisis par `video-verticale` et `pub-video`. La voix off est dite par ta voix clonée (voicebox), ou il te donne les textes à enregistrer. Il contrôle la vidéo et te la livre avec sa légende. |
+| [`site-immersif`](skills/site-immersif/SKILL.md) | Conçoit et construit un site web immersif : scroll cinématique, 3D, shaders et une interaction signature à manipuler. Il propose trois concepts, fixe la direction artistique, prototype l'effet phare puis construit section par section. Il manipule lui-même le site avec `pilote` (toucher, glisser, défiler, clavier) et filme chaque geste pour juger l'effet, sur ordinateur et téléphone simulé, contre un budget de performance non négociable (Lighthouse mobile ≥ 95, affichage principal en 2 s). Le site vise le niveau d'accessibilité WCAG 2.2 AA, vérifié par un audit, et les règles d'interface fluide d'Apple : réponse immédiate, animations qu'on peut rattraper, ressorts, élan. Il s'appuie sur les skills officiels GSAP, Motion et les skills Three.js qu'il te propose d'installer. |
 
 ## Installation
 
@@ -160,6 +161,34 @@ Avec `refonte <vidéo>`, il refait une ancienne vidéo de ta chaîne de la même
 
 - Les skills `refonte-youtube`, `pub-video`, `montage-youtube` et `video-verticale`, fournis avec le plugin
 - [voicebox](https://github.com/jamiepine/voicebox) avec le profil de ta voix clonée : une vidéo de dix minutes ne se fait pas sans
+
+## site-immersif
+
+```
+/aycode:site-immersif [projet ou dossier] [produit, public, objectif, références]
+```
+
+Il se lance aussi tout seul quand tu demandes un site « effet waouh », une expérience 3D ou une animation au scroll.
+
+1. Il fait l'état des lieux du projet et des skills spécialisés installés. Si tu donnes des sites de référence, il les analyse avec `pilote analyse` : bibliothèques, réglages du scroll, durées et courbes des animations, palette, polices, 3D et shaders, interactions, poids. Il filme chaque effet et t'écrit une fiche de procédés à transposer. Il en reprend les procédés, jamais le code, les images, les textes ni l'identité.
+2. Il te propose trois concepts (sobre, audacieux, inattendu) avec leurs références. Tu choisis.
+3. Il fixe la direction artistique (palette, typographie, matière, mouvement, son) et la carte des sections, en alternant tension et repos.
+4. Il prototype seule l'interaction signature, l'effet phare, et tu l'essaies avant la suite.
+5. Il pose les fondations : contenu réel, polices et chargement optimisés, version mouvement réduit.
+6. Il construit section par section. Chaque section passe le contrôle avec `pilote` : il touche, glisse, fait défiler et parcourt au clavier, filme chaque geste en planche d'images et mesure la fluidité, la réaction et les décalages, sur téléphone simulé puis ordinateur. Il interrompt chaque animation en plein mouvement pour vérifier qu'elle repart sans saut. Il audite l'accessibilité (axe-core, contraste mesuré sur l'image réellement affichée, taille des cibles tactiles). Lighthouse mobile complète le contrôle.
+7. Il ajoute une raison de revenir sur le site, puis te livre les mesures, les captures et les licences des ressources.
+
+Tout est noté dans `immersif.md`, à la racine du projet, qui sert aussi de mémoire pour reprendre.
+
+### Prérequis
+
+- Node.js 20 ou plus
+- Playwright dans le projet, pour `pilote` : `npm i -D playwright && npx playwright install chromium`
+- axe-core dans le projet, pour l'audit d'accessibilité : `npm i -D axe-core`
+- Optionnel : Google Chrome, pour analyser les sites de référence qui utilisent des vidéos MP4 (`--chrome`) ; le Chromium de test ne les lit pas
+
+`pilote` (`skills/site-immersif/pilote/pilote.mjs`) garde un navigateur ouvert entre deux commandes et rend un retour compact : les éléments à l'écran avec une référence courte (`@e3 [button] "Commencer"`), ce qui apparaît et disparaît après chaque action, des planches d'images filmées pendant un geste et des mesures (fluidité, réaction, décalages, scripts trop lents). `--visible` ouvre une vraie fenêtre qui utilise ta carte graphique, pour des mesures 3D réalistes. `analyse <url>` relève la recette d'un site de référence. `node skills/site-immersif/pilote/pilote.mjs aide` liste les commandes.
+- Recommandé : les skills spécialisés, que le skill te propose d'installer quand la techno choisie en a besoin. Ce sont les skills officiels [GSAP](https://github.com/greensock/gsap-skills) et [Motion](https://motion.dev/docs/ai-kit), et des skills communautaires pour Three.js, WebGPU et les shaders, dont la liste est dans [`references/techno.md`](skills/site-immersif/references/techno.md)
 
 ## Licence
 
